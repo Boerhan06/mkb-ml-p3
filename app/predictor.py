@@ -16,6 +16,46 @@ if str(ROOT) not in sys.path:
 ARTIFACT_DIR = ROOT / "artifacts"
 
 
+def _patch_xgboost_cross_platform():
+    """Fix bug kompatibilitas cross-platform libstdc++ (Linux/Colab) vs MSVC (Windows) pada serialisasi RNG XGBoost."""
+    if sys.platform != "win32":
+        return
+    try:
+        import struct
+        import numpy as np
+        import xgboost as xgb
+
+        dummy = xgb.XGBClassifier(n_estimators=1, random_state=42)
+        dummy.fit(np.zeros((5, 2)), np.array([0, 1, 0, 1, 0]))
+        win_h = dummy.get_booster().__getstate__()["handle"]
+        idx_win = win_h.find(b"rng_state")
+        if idx_win == -1:
+            return
+        win_len = struct.unpack(">q", win_h[idx_win + 11 : idx_win + 19])[0]
+        win_rng_bytes = win_h[idx_win : idx_win + 19 + win_len]
+
+        orig_setstate = xgb.Booster.__setstate__
+
+        def patched_setstate(self, state):
+            buf = state.get("handle")
+            if buf is not None:
+                idx = buf.find(b"rng_state")
+                if idx != -1:
+                    l = struct.unpack(">q", buf[idx + 11 : idx + 19])[0]
+                    val = buf[idx + 19 : idx + 19 + l]
+                    if val.startswith(b"42 "):
+                        buf = bytearray(buf[:idx]) + win_rng_bytes + bytearray(buf[idx + 19 + l :])
+                        state["handle"] = buf
+            return orig_setstate(self, state)
+
+        xgb.Booster.__setstate__ = patched_setstate
+    except Exception:
+        pass
+
+
+_patch_xgboost_cross_platform()
+
+
 @lru_cache(maxsize=1)
 def load():
     """(model, metadata). lru_cache = di-load sekali per proses, bukan per request."""

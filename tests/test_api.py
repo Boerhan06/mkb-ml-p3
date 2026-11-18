@@ -1,72 +1,174 @@
-"""Smoke test API (checklist P3): input normal, ekstrem, dan tidak valid. Jalankan: pytest -q"""
-import pytest
+"""Smoke test & unit test API Diagnosis Kerusakan Bearing (Checklist P3).
+
+Menguji endpoint FastAPI:
+1. Health check (/health)
+2. Input normal & verifikasi skema multikelas
+3. Sanitasi otomatis (casing & whitespace pada posisi sensor)
+4. Input tidak valid & ekstrem di luar batas fisik (wajib tolak HTTP 422)
+5. Input kosong & missing field (wajib tolak HTTP 422)
+6. Batch prediction (/predict/batch)
+Jalankan:
+    pytest -v
+"""
+
 from fastapi.testclient import TestClient
+import pytest
 
 from app.api.main import app
 
 NORMAL = {
-    "tipe_produk": "L", "suhu_udara_K": 301.2, "suhu_proses_K": 310.8, "kecepatan_rpm": 1290,
-    "torsi_Nm": 62.5, "keausan_tool_menit": 228, "getaran_mm_s": 4.1, "jam_sejak_servis": 410,
-    "shift_operator": "malam",
+    "posisi_sensor": "drive_end",
+    "kecepatan_rpm": 2419.0,
+    "beban_kN": 2.09,
+    "suhu_housing_C": 55.3,
+    "rms_g": 0.5089,
+    "puncak_g": 1.6455,
+    "kurtosis": 2.894,
+    "crest_factor": 3.234,
+    "energi_bpfo": 0.023,
+    "energi_bpfi": 0.0045,
+    "energi_bsf": 0.1951,
+    "frekuensi_dominan_hz": 82.7,
 }
 
 
 @pytest.fixture(scope="module")
 def client():
-    with TestClient(app) as c:  # `with` menjalankan startup: model di-load sekali
+    with TestClient(app) as c:
         yield c
 
 
 def test_health(client):
+    """Pastikan server aktif dan metadata terisi lengkap."""
     r = client.get("/health")
     assert r.status_code == 200
-    assert r.json()["status"] == "ok" and len(r.json()["fitur_input"]) == 9
+    data = r.json()
+    assert data["status"] == "ok"
+    assert len(data["fitur_input"]) == 12
+    assert "versi_model" in data
+    assert "kelas_target" in data
+    assert len(data["kelas_target"]) == 4
 
 
-def test_normal_matches_p2_production_test(client):
+def test_predict_normal(client):
+    """Uji prediksi normal dan verifikasi skema respons multikelas."""
     r = client.post("/predict", json=NORMAL)
     assert r.status_code == 200, r.text
     body = r.json()
-    assert 0 <= body["probabilitas_gagal"] <= 1
-    assert body["status"] in ("SEGERA SERVIS", "AMAN")
-    assert body["status"] == ("SEGERA SERVIS" if body["probabilitas_gagal"] >= body["threshold"] else "AMAN")
+
+    assert "kondisi" in body
+    assert body["kondisi"] in ("normal", "outer_race", "inner_race", "bola")
+    assert "label_kondisi" in body
+    assert "probabilitas" in body
+    assert len(body["probabilitas"]) == 4
+    for cls in ("normal", "outer_race", "inner_race", "bola"):
+        assert cls in body["probabilitas"]
+        assert 0.0 <= body["probabilitas"][cls] <= 1.0
+
+    assert "probabilitas_tertinggi" in body
+    assert 0.0 <= body["probabilitas_tertinggi"] <= 1.0
+    assert "rekomendasi" in body
+    assert len(body["rekomendasi"]) > 0
+    assert body["latency_ms"] >= 0
 
 
-def test_healthy_machine_is_safe(client):
-    sehat = {**NORMAL, "torsi_Nm": 35, "keausan_tool_menit": 10, "getaran_mm_s": 1.0, "jam_sejak_servis": 20}
-    assert client.post("/predict", json=sehat).json()["status"] == "AMAN"
+def test_extreme_valid_boundaries(client):
+    """Input batas ekstrem yang masih valid secara spesifikasi fisik industri."""
+    batas_atas = {
+        **NORMAL,
+        "kecepatan_rpm": 10000.0,
+        "beban_kN": 50.0,
+        "suhu_housing_C": 120.0,
+        "rms_g": 15.0,
+        "puncak_g": 45.0,
+        "kurtosis": 20.0,
+        "crest_factor": 5.0,
+    }
+    r1 = client.post("/predict", json=batas_atas)
+    assert r1.status_code == 200
+
+    batas_bawah = {
+        **NORMAL,
+        "kecepatan_rpm": 0.0,
+        "beban_kN": 0.1,
+        "suhu_housing_C": 0.0,
+        "rms_g": 0.01,
+        "puncak_g": 0.02,
+        "crest_factor": 1.0,
+        "frekuensi_dominan_hz": 1.0,
+    }
+    r2 = client.post("/predict", json=batas_bawah)
+    assert r2.status_code == 200
 
 
-def test_extreme_but_valid_still_answers(client):
-    ekstrem = {**NORMAL, "kecepatan_rpm": 4000, "torsi_Nm": 150, "keausan_tool_menit": 500, "getaran_mm_s": 50}
-    assert client.post("/predict", json=ekstrem).status_code == 200
+def test_messy_casing_and_whitespace(client):
+    """Sanitasi validator Pydantic harus merapikan string dengan whitespace atau huruf besar/kecil."""
+    kotor = {
+        **NORMAL,
+        "posisi_sensor": " DRIVE END ",
+    }
+    r = client.post("/predict", json=kotor)
+    assert r.status_code == 200
 
 
-def test_broken_sensor_null_still_answers(client):
-    rusak = {**NORMAL, "torsi_Nm": None, "getaran_mm_s": None}
-    assert client.post("/predict", json=rusak).status_code == 200
-
-
-def test_messy_shift_is_cleaned(client):
-    assert client.post("/predict", json={**NORMAL, "shift_operator": " MALAM "}).status_code == 200
-
-
-@pytest.mark.parametrize("field,value", [
-    ("tipe_produk", "X"), ("kecepatan_rpm", 9000), ("torsi_Nm", -1), ("suhu_proses_K", 0),
-    ("shift_operator", "subuh"), ("kecepatan_rpm", "cepat"),
-])
-def test_invalid_is_rejected_422(client, field, value):
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("posisi_sensor", "tengah_mesin"),   # Posisi di luar literal valid
+        ("posisi_sensor", "gearbox"),        # Posisi di luar literal valid
+        ("kecepatan_rpm", -10.0),            # RPM negatif mustahil
+        ("kecepatan_rpm", "dua_ribu"),       # RPM berupa string (tipe salah)
+        ("beban_kN", 0.0),                   # Beban harus > 0
+        ("beban_kN", -2.5),                  # Beban negatif mustahil
+        ("rms_g", -0.5),                     # Getaran RMS negatif ditolak validator API
+        ("rms_g", "getaran_tinggi"),         # Getaran RMS berupa string (tipe salah)
+        ("puncak_g", -1.0),                  # Getaran puncak negatif
+        ("puncak_g", "puncak_string"),       # Getaran puncak berupa string
+        ("kurtosis", -3.0),                  # Kurtosis negatif
+        ("crest_factor", 0.5),               # Crest factor < 1.0 secara matematis mustahil
+        ("crest_factor", -1.0),              # Negatif
+        ("frekuensi_dominan_hz", 0.0),       # Frekuensi harus > 0
+        ("frekuensi_dominan_hz", -50.0),     # Frekuensi negatif mustahil
+    ],
+)
+def test_invalid_input_rejected_422(client, field, value):
+    """Input tidak valid harus ditolak status 422 oleh Pydantic."""
     r = client.post("/predict", json={**NORMAL, field: value})
     assert r.status_code == 422
-    assert r.json()["detail"][0]["loc"][-1] == field
+    errors = r.json().get("detail", [])
+    assert any(field in err.get("loc", []) for err in errors)
 
 
-def test_missing_field_is_rejected(client):
-    body = {k: v for k, v in NORMAL.items() if k != "torsi_Nm"}
-    assert client.post("/predict", json=body).status_code == 422
+def test_empty_input_rejected_422(client):
+    """Payload JSON kosong wajib ditolak 422."""
+    r = client.post("/predict", json={})
+    assert r.status_code == 422
 
 
-def test_batch(client):
-    r = client.post("/predict/batch", json=[NORMAL, {**NORMAL, "tipe_produk": "H"}])
-    assert r.status_code == 200 and len(r.json()) == 2
-    assert client.post("/predict/batch", json=[]).json() == []
+def test_missing_required_field_rejected_422(client):
+    """Payload dengan field wajib yang hilang (misal kecepatan_rpm) wajib ditolak 422."""
+    kurang = {k: v for k, v in NORMAL.items() if k != "kecepatan_rpm"}
+    r = client.post("/predict", json=kurang)
+    assert r.status_code == 422
+    assert "kecepatan_rpm" in str(r.json())
+
+
+def test_batch_prediction(client):
+    """Pengujian endpoint batch dengan multiple data dan empty list."""
+    batch_data = [
+        NORMAL,
+        {**NORMAL, "posisi_sensor": "fan_end", "kecepatan_rpm": 1800.0, "rms_g": 0.8},
+        {**NORMAL, "energi_bpfo": 0.35, "rms_g": 0.95},
+    ]
+    r = client.post("/predict/batch", json=batch_data)
+    assert r.status_code == 200
+    hasil = r.json()
+    assert len(hasil) == 3
+    assert all("kondisi" in item for item in hasil)
+    assert all("probabilitas" in item for item in hasil)
+    assert all(len(item["probabilitas"]) == 4 for item in hasil)
+
+    # Empty batch
+    r_empty = client.post("/predict/batch", json=[])
+    assert r_empty.status_code == 200
+    assert r_empty.json() == []

@@ -1,0 +1,12 @@
+{
+  "name": "mkb-ml-p3",
+  "version": "1.0.0",
+  "description": "Diagnosis Kerusakan Bearing - MKB ML P3",
+  "scripts": {
+    "dev": ".\\.venv\\Scripts\\streamlit.exe run app/ui/streamlit_app.py",
+    "ui": ".\\.venv\\Scripts\\streamlit.exe run app/ui/streamlit_app.py",
+    "api": ".\\.venv\\Scripts\\uvicorn.exe app.api.main:app --reload --port 8000",
+    "test": ".\\.venv\\Scripts\\pytest.exe -v",
+    "train": ".\\.venv\\Scripts\\python.exe train_model.py"
+  }
+}

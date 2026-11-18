@@ -1,0 +1,3 @@
+@echo off
+echo Menjalankan Backend FastAPI di http://127.0.0.1:8000...
+.\.venv\Scripts\uvicorn.exe app.api.main:app --reload --port 8000

@@ -1,0 +1,3 @@
+@echo off
+echo Menjalankan Streamlit UI (Diagnosis Kerusakan Bearing)...
+.\.venv\Scripts\streamlit.exe run app/ui/streamlit_app.py

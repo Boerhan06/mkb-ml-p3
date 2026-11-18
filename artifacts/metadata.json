@@ -1,34 +1,122 @@
 {
   "versi_model": "1.0.0",
-  "dibuat": "2026-10-30",
-  "fitur_input": [
-    "tipe_produk",
-    "suhu_udara_K",
-    "suhu_proses_K",
-    "kecepatan_rpm",
-    "torsi_Nm",
-    "keausan_tool_menit",
-    "getaran_mm_s",
-    "jam_sejak_servis",
-    "shift_operator"
+  "dibuat": "2026-11-18",
+  "kasus": "Kasus 4: Diagnosis Kerusakan Bearing",
+  "klien": "Analis Getaran Pabrik Semen",
+  "target": "kondisi",
+  "kelas_target": [
+    "bola",
+    "inner_race",
+    "normal",
+    "outer_race"
   ],
-  "target": "gagal_24jam",
-  "threshold": 0.16,
-  "metrik_validasi": {
-    "pr_auc": 0.649
+  "fitur_input": [
+    "posisi_sensor",
+    "kecepatan_rpm",
+    "beban_kN",
+    "suhu_housing_C",
+    "rms_g",
+    "puncak_g",
+    "kurtosis",
+    "crest_factor",
+    "energi_bpfo",
+    "energi_bpfi",
+    "energi_bsf",
+    "frekuensi_dominan_hz"
+  ],
+  "fitur_turunan": [
+    "is_drive_end",
+    "frekuensi_rotasi_hz",
+    "rasio_frekuensi_dominan",
+    "energi_kerusakan_total",
+    "rasio_bpfo",
+    "rasio_bpfi",
+    "rasio_bsf",
+    "rasio_getaran_beban",
+    "indeks_keparahan",
+    "daya_getaran",
+    "selisih_bpfi_bpfo"
+  ],
+  "metode_split": {
+    "tipe": "Stratified Split (80% Train, 20% Test)",
+    "alasan": "Data berupa observasi getaran 1 detik independen berlabel multikelas tidak seimbang (bukan deret waktu tunggal). Stratified split memastikan proporsi setiap kelas kerusakan terjaga konsisten antara train dan test."
+  },
+  "perbandingan_model": {
+    "baseline_logistic_regression": {
+      "macro_f1": 0.6909
+    },
+    "best_random_forest": {
+      "macro_f1": 0.8014,
+      "kenaikan_f1": 0.1105
+    }
   },
   "metrik_test": {
-    "pr_auc": 0.695,
-    "recall": 0.89
+    "macro_f1": 0.8014,
+    "accuracy": 0.84,
+    "per_class": {
+      "bola": {
+        "precision": 0.9245,
+        "recall": 0.6183,
+        "f1_score": 0.741,
+        "support": 317
+      },
+      "inner_race": {
+        "precision": 0.8919,
+        "recall": 0.6704,
+        "f1_score": 0.7655,
+        "support": 443
+      },
+      "normal": {
+        "precision": 0.8033,
+        "recall": 0.961,
+        "f1_score": 0.8751,
+        "support": 1666
+      },
+      "outer_race": {
+        "precision": 0.915,
+        "recall": 0.7492,
+        "f1_score": 0.8238,
+        "support": 618
+      }
+    },
+    "confusion_matrix": {
+      "bola": {
+        "bola": 196,
+        "inner_race": 5,
+        "normal": 110,
+        "outer_race": 6
+      },
+      "inner_race": {
+        "bola": 7,
+        "inner_race": 297,
+        "normal": 136,
+        "outer_race": 3
+      },
+      "normal": {
+        "bola": 7,
+        "inner_race": 24,
+        "normal": 1601,
+        "outer_race": 34
+      },
+      "outer_race": {
+        "bola": 2,
+        "inner_race": 7,
+        "normal": 146,
+        "outer_race": 463
+      }
+    }
   },
-  "asumsi_biaya": {
-    "FN": 15000000,
-    "FP": 500000
+  "rekomendasi_suku_cadang": {
+    "normal": "Tidak perlu suku cadang, mesin beroperasi normal.",
+    "outer_race": "Bearing Outer Ring / Cincin Luar Bantalan Baru.",
+    "inner_race": "Bearing Inner Ring / Cincin Dalam Bantalan Baru.",
+    "bola": "Rolling Elements / Bola Bantalan Baru."
   },
   "versi_library": {
-    "python": "3.12.14",
+    "python": "3.14.5",
     "sklearn": "1.9.1",
     "xgboost": "3.4.1",
-    "pandas": "3.1.0"
+    "pandas": "3.1.0",
+    "joblib": "1.6.0"
   }
 }

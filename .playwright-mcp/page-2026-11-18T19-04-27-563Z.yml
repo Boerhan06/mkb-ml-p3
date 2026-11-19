@@ -1,0 +1,117 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - complementary [ref=f1e3]:
+      - generic [ref=f1e4]:
+        - generic [ref=f1e5]: VibraCheck
+        - generic [ref=f1e11]:
+          - img "VibraCheck Logo" [ref=f1e13]
+          - generic [ref=f1e14]:
+            - heading "VibraCheck" [level=1] [ref=f1e15]
+            - paragraph [ref=f1e16]: Bearing Diagnostic Hub
+        - navigation [ref=f1e17]:
+          - button "Diagnosa & Telemetri" [ref=f1e18] [cursor=pointer]
+          - button "Analisis Spektrum FFT" [ref=f1e22] [cursor=pointer]
+          - button "Armada Mesin (Batch CSV)" [ref=f1e26] [cursor=pointer]
+          - button "Status Model & API" [ref=f1e32] [cursor=pointer]
+      - generic [ref=f1e37]:
+        - generic [ref=f1e38]:
+          - generic [ref=f1e39]: Status model
+          - generic [ref=f1e40]: Aktif
+        - generic [ref=f1e43]:
+          - generic [ref=f1e44]:
+            - generic [ref=f1e45]: "Model:"
+            - generic [ref=f1e46]: Random Forest
+          - generic [ref=f1e47]:
+            - generic [ref=f1e48]: "Versi:"
+            - generic [ref=f1e49]: v1.0.0
+          - generic [ref=f1e50]:
+            - generic [ref=f1e51]: "Macro F1:"
+            - generic [ref=f1e52]: "0.8014"
+        - generic [ref=f1e53]:
+          - generic [ref=f1e54]: Telemetri
+          - generic [ref=f1e55]: 12 Fitur
+    - main [ref=f1e56]:
+      - generic [ref=f1e57]:
+        - generic [ref=f1e58]:
+          - generic [ref=f1e59]: VibroAI
+          - navigation [ref=f1e66]:
+            - button "Normal" [ref=f1e67] [cursor=pointer]
+            - button "Outer Race" [ref=f1e68] [cursor=pointer]
+            - button "Inner Race" [ref=f1e69] [cursor=pointer]
+            - button "Ball Fault" [ref=f1e70] [cursor=pointer]
+          - generic [ref=f1e71]: "Pump #04 DE"
+        - generic [ref=f1e77]:
+          - generic [ref=f1e78]: Live 20 kHz
+          - generic [ref=f1e81] [cursor=pointer]:
+            - img "Avatar Operator" [ref=f1e83]
+            - generic [ref=f1e84]: Rudi Hartono
+      - generic [ref=f1e88]:
+        - generic [ref=f1e92]:
+          - heading "Panel Input Sensor Manual (12 Fitur)" [level=3] [ref=f1e93]
+          - paragraph [ref=f1e94]: Sesuaikan nilai getaran atau uji ketatnya validasi Pydantic backend FastAPI
+        - generic [ref=f1e95]:
+          - button "Simulasi Nilai Abnormal (Demo)" [ref=f1e96] [cursor=pointer]
+          - button "Buka Editor Parameter" [ref=f1e100] [cursor=pointer]
+      - generic [ref=f1e105]:
+        - generic [ref=f1e106]:
+          - generic [ref=f1e107]:
+            - generic [ref=f1e109]: Anomali terkonfirmasi
+            - generic [ref=f1e110]: •
+            - generic [ref=f1e111]: Akselerometer DE-04B
+          - heading "Ball Fault terdeteksi" [level=2] [ref=f1e112]
+          - paragraph [ref=f1e113]: Terdeteksi impuls getaran repetitif tinggi pada elemen bola (BSF). Hentikan operasi atau jadwalkan penggantian bearing segera untuk mencegah macet poros mendadak.
+          - generic [ref=f1e114]:
+            - generic [ref=f1e115]: Keyakinan 70.9%
+            - generic [ref=f1e116]: •
+            - generic [ref=f1e117]: Terdeteksi
+            - generic [ref=f1e118]: •
+            - generic [ref=f1e119]: Frekuensi Dominan 98.4 Hz
+        - generic [ref=f1e120]:
+          - generic [ref=f1e121]:
+            - generic [ref=f1e122]: Distribusi probabilitas
+            - generic [ref=f1e123]: Random Forest
+          - generic [ref=f1e125]:
+            - generic [ref=f1e126]: Normal
+            - generic [ref=f1e127]: 20%
+          - generic [ref=f1e131]:
+            - generic [ref=f1e132]: Outer Race (BPFO)
+            - generic [ref=f1e133]: 3%
+          - generic [ref=f1e137]:
+            - generic [ref=f1e138]: Inner Race (BPFI)
+            - generic [ref=f1e139]: 7%
+          - generic [ref=f1e143]:
+            - generic [ref=f1e144]: Ball Fault (BSF)
+            - generic [ref=f1e145]: 71%
+      - generic [ref=f1e148]:
+        - generic [ref=f1e149]: Memuat grafik spektrum FFT...
+        - generic [ref=f1e153]:
+          - generic [ref=f1e154]:
+            - generic [ref=f1e155]:
+              - heading "Rekomendasi Tindakan" [level=3] [ref=f1e156]
+              - paragraph [ref=f1e157]: Prosedur perawatan teknis bantalan
+            - generic [ref=f1e158]: ISO 20816
+          - generic [ref=f1e159]:
+            - paragraph [ref=f1e160]: Terdeteksi impuls getaran repetitif tinggi pada elemen bola (BSF). Hentikan operasi atau jadwalkan penggantian bearing segera untuk mencegah macet poros mendadak.
+            - generic [ref=f1e161]:
+              - generic [ref=f1e162]:
+                - generic [ref=f1e163]: Komponen
+                - generic [ref=f1e164]: Deep Groove Ball Bearing (Rolling Elements)
+              - generic [ref=f1e165]:
+                - generic [ref=f1e166]: Kode Suku Cadang
+                - generic [ref=f1e167]: SKF 6208-2RS
+              - generic [ref=f1e168]:
+                - generic [ref=f1e169]: Ketersediaan
+                - generic [ref=f1e170]: Stok 4 unit di rak B-14
+            - generic [ref=f1e171]:
+              - generic [ref=f1e172]:
+                - generic [ref=f1e173]: Klasifikasi ISO 20816
+                - generic [ref=f1e174]: Zona D (Kritis / Bahaya Kerusakan Total)
+              - generic [ref=f1e175]: "> 7.1 mm/s"
+          - generic [ref=f1e176]:
+            - button "Buat tiket perbaikan" [ref=f1e177] [cursor=pointer]
+            - button "Unduh laporan PDF spektrogram" [ref=f1e181] [cursor=pointer]
+      - generic [ref=f1e189]: Memuat bentuk gelombang domain waktu...
+      - generic [ref=f1e191]:
+        - generic [ref=f1e192]: VibraCheck · Sistem Pemantauan Getaran Industri Berstandar ISO 20816
+        - generic [ref=f1e193]: Random Forest Classifier (Macro F1 0.8014) · 12 Parameter Input
+  - button "Open Next.js Dev Tools" [ref=f1e199] [cursor=pointer]

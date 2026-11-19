@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Diagnosis Kerusakan Bearing - MKB ML P3",
   "scripts": {
+    "start": "run.bat",
+    "fullstack": "run.bat",
+    "web": "cd web && npm run dev",
     "dev": ".\\.venv\\Scripts\\streamlit.exe run app/ui/streamlit_app.py",
     "ui": ".\\.venv\\Scripts\\streamlit.exe run app/ui/streamlit_app.py",
     "api": ".\\.venv\\Scripts\\uvicorn.exe app.api.main:app --reload --port 8000",

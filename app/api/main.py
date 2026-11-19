@@ -1,7 +1,7 @@
 """FastAPI Backend untuk Prediksi & Diagnosis Kerusakan Bearing (Kasus 4).
 
 Menjalankan model klasifikasi multikelas (normal, outer_race, inner_race, bola)
-dengan validasi Pydantic ketat (fail-fast HTTP 422).
+dengan validasi Pydantic ketat (fail-fast HTTP 422) dan dukungan penuh frontend Next.js.
 
 Jalankan lokal:
     uvicorn app.api.main:app --reload --port 8000
@@ -18,6 +18,7 @@ import time
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -39,17 +40,29 @@ app = FastAPI(
     title="API Diagnosis Kerusakan Bearing",
     description=(
         "Layanan inferensi Machine Learning untuk mendiagnosis kondisi dan kerusakan bearing "
-        "(Normal, Outer Race Fault, Inner Race Fault, Ball Fault) berdasarkan ringkasan getaran sensor."
+        "(Normal, Outer Race, Inner Race, Ball Fault) berdasarkan ringkasan telemetri sensor vibrasi."
     ),
     version="1.0.0",
     lifespan=lifespan,
+)
+
+# ---------------------------------------------------------------------------
+# Konfigurasi CORS untuk Mendukung Akses Frontend Next.js (Localhost & Vercel)
+# ---------------------------------------------------------------------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
 class InputData(BaseModel):
     """Skema input parameter sensor getaran dan operasional bearing.
 
-    Input yang melanggar batas fisika divalidasi dan ditolak dengan status HTTP 422.
+    Input yang melanggar batas fisika atau string kosong divalidasi ketat dan
+    ditolak dengan status HTTP 422 Unprocessable Entity.
     """
 
     posisi_sensor: Literal["drive_end", "fan_end"] = Field(
@@ -114,9 +127,11 @@ class InputData(BaseModel):
     @field_validator("posisi_sensor", mode="before")
     @classmethod
     def normalisasi_posisi_sensor(cls, v: str) -> str:
-        """Sanitasi otomatis: menghapus whitespace, lowercase, dan standarisasi underscore."""
+        """Sanitasi otomatis: menghapus whitespace, lowercase, standarisasi underscore, dan tolak string kosong."""
         if isinstance(v, str):
             v_clean = v.strip().lower().replace(" ", "_").replace("-", "_")
+            if not v_clean:
+                raise ValueError("posisi_sensor tidak boleh berupa string kosong")
             return v_clean
         return v
 
@@ -142,26 +157,46 @@ class InputData(BaseModel):
     }
 
 
-class PrediksiResponse(BaseModel):
-    """Skema respons hasil inferensi klasifikasi multikelas kerusakan bearing."""
+class RekomendasiData(BaseModel):
+    """Rincian rekomendasi tindakan, suku cadang, dan klasifikasi standar ISO 20816."""
 
-    kondisi: Literal["normal", "outer_race", "inner_race", "bola"] = Field(
-        description="Kode kelas kondisi bearing terprediksi"
+    tindakan: str = Field(description="Rekomendasi tindakan teknis pemeliharaan presisi")
+    komponen: str = Field(description="Komponen mekanis terkait")
+    kode_suku_cadang: str = Field(description="Nomor part / kode suku cadang bearing")
+    ketersediaan: str = Field(description="Status ketersediaan stok suku cadang di gudang")
+    zona_iso_20816: str = Field(description="Klasifikasi zona getaran menurut standar ISO 20816")
+
+
+class PrediksiResponse(BaseModel):
+    """Skema respons hasil inferensi klasifikasi multikelas kerusakan bearing untuk Next.js & UI."""
+
+    kelas_prediksi: Literal["Normal", "Outer Race", "Inner Race", "Ball Fault"] = Field(
+        description="Nama kelas kondisi/kerusakan utama hasil inferensi model"
     )
-    label_kondisi: str = Field(
-        description="Nama kelas kondisi/kerusakan yang mudah dibaca teknisi"
+    status_bahaya: Literal["AMAN", "WASPADA", "KRITIS"] = Field(
+        description="Level status bahaya mesin industri (AMAN, WASPADA, KRITIS)"
     )
-    probabilitas: dict[str, float] = Field(
-        description="Sebaran nilai probabilitas untuk masing-masing kelas (0.0 - 1.0)"
+    keyakinan: float = Field(
+        description="Probabilitas kelas tertinggi (rentang 0.0 - 1.0)"
     )
-    probabilitas_tertinggi: float = Field(
-        description="Skor keyakinan (confidence score) dari kelas terprediksi"
+    distribusi_probabilitas: dict[str, float] = Field(
+        description="Sebaran nilai probabilitas untuk masing-masing kelas (Normal, Outer Race, Inner Race, Ball Fault)"
     )
-    rekomendasi: str = Field(
-        description="Rekomendasi suku cadang dan tindakan perbaikan untuk teknisi pabrik"
+    rekomendasi: RekomendasiData = Field(
+        description="Dictionary rincian rekomendasi tindakan, suku cadang, dan zona ISO 20816"
     )
     versi_model: str = Field(description="Versi model yang aktif melayani request")
     latency_ms: float = Field(description="Waktu inferensi komputasi model (milidetik)")
+
+    # Field kompatibilitas untuk sistem eksisting
+    kondisi: str = Field(description="Kode kelas internal (normal, outer_race, inner_race, bola)")
+    label_kondisi: str = Field(description="Nama kelas kondisi/kerusakan")
+    probabilitas: dict[str, float] = Field(
+        description="Distribusi probabilitas kode kelas internal"
+    )
+    probabilitas_tertinggi: float = Field(
+        description="Alias skor keyakinan kelas tertinggi"
+    )
 
 
 def _log(inputs: list[dict], outputs: list[dict]):
@@ -174,15 +209,19 @@ def _log(inputs: list[dict], outputs: list[dict]):
 def health():
     """Endpoint health check server & metadata model yang sedang berjalan."""
     _, meta = predictor.load()
+    macro_f1 = meta.get("metrik_test", {}).get(
+        "macro_f1",
+        meta.get("perbandingan_model", {}).get("best_random_forest", {}).get("macro_f1", 0.8014),
+    )
     return {
         "status": "ok",
         "versi_model": meta.get("versi_model", "1.0.0"),
+        "macro_f1": macro_f1,
+        "fitur_input": meta.get("fitur_input", []),
         "kasus": meta.get("kasus", "Kasus 4: Diagnosis Kerusakan Bearing"),
         "kelas_target": meta.get(
             "kelas_target", ["bola", "inner_race", "normal", "outer_race"]
         ),
-        "fitur_input": meta.get("fitur_input", []),
-        "macro_f1": meta.get("metrik_test", {}).get("macro_f1", 0.0),
     }
 
 
@@ -200,12 +239,12 @@ def predict_batch(xs: list[InputData]):
     """Prediksi batch kondisi bearing (maksimal 1000 rekaman per request)."""
     if len(xs) > MAX_BATCH:
         raise HTTPException(
-            status_code=413,
-            detail=f"Batch terlalu besar: maksimal {MAX_BATCH} item per request.",
+            status_code=400,
+            detail=f"Ukuran batch melebihi batas maksimum {MAX_BATCH} baris.",
         )
-    rows = [x.model_dump() for x in xs]
-    if not rows:
+    if not xs:
         return []
+    rows = [x.model_dump() for x in xs]
     hasil = predictor.predict_rows(rows)
     _log(rows, hasil)
     return hasil

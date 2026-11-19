@@ -1,0 +1,122 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e2]:
+    - complementary [ref=f4e3]:
+      - generic [ref=f4e4]:
+        - generic [ref=f4e5]: vibracheck
+        - generic [ref=f4e11] [cursor=pointer]:
+          - generic [ref=f4e12]: DE
+          - generic [ref=f4e13]:
+            - generic [ref=f4e14]: "Turbine Pump #04"
+            - generic [ref=f4e15]: Drive End · DE-04B
+        - generic [ref=f4e18]:
+          - generic [ref=f4e19]: WORKSPACE
+          - navigation [ref=f4e20]:
+            - button "Diagnosa & Telemetri Live" [ref=f4e21] [cursor=pointer]:
+              - generic [ref=f4e22]: Diagnosa & Telemetri
+              - generic [ref=f4e26]: Live
+            - button "Analisis Spektrum FFT 2 kHz" [ref=f4e27] [cursor=pointer]:
+              - generic [ref=f4e28]: Analisis Spektrum FFT
+              - generic [ref=f4e32]: 2 kHz
+            - button "Armada Mesin (Batch) CSV" [ref=f4e33] [cursor=pointer]:
+              - generic [ref=f4e34]: Armada Mesin (Batch)
+              - generic [ref=f4e40]: CSV
+            - button "Status Model & API v1.0" [ref=f4e41] [cursor=pointer]:
+              - generic [ref=f4e42]: Status Model & API
+              - generic [ref=f4e47]: v1.0
+      - generic [ref=f4e48]:
+        - generic [ref=f4e49]:
+          - generic [ref=f4e50]: Vibra Assist
+          - paragraph [ref=f4e55]: Model Random Forest aktif (F1 0.8014). Rekomendasi tindakan ISO 20816 siap dievaluasi.
+          - button "Cek Status Model" [ref=f4e56] [cursor=pointer]
+        - generic [ref=f4e57]:
+          - button "Pengaturan Sensor" [ref=f4e58] [cursor=pointer]
+          - button "Panduan & Standar ISO" [ref=f4e63] [cursor=pointer]
+        - generic [ref=f4e68]:
+          - generic [ref=f4e69]:
+            - img "Avatar Operator" [ref=f4e71]
+            - generic [ref=f4e72]:
+              - generic [ref=f4e73]: Rudi Hartono
+              - generic [ref=f4e74]: Vibration Analyst
+          - button "Keluar / Ganti Akun" [ref=f4e75] [cursor=pointer]
+    - main [ref=f4e79]:
+      - generic [ref=f4e80]:
+        - generic [ref=f4e81]:
+          - generic [ref=f4e82]: VibroAI
+          - navigation [ref=f4e89]:
+            - button "Normal" [ref=f4e90] [cursor=pointer]
+            - button "Outer Race" [ref=f4e91] [cursor=pointer]
+            - button "Inner Race" [ref=f4e92] [cursor=pointer]
+            - button "Ball Fault" [ref=f4e93] [cursor=pointer]
+          - generic [ref=f4e94]: "Pump #04 DE"
+        - generic [ref=f4e100]:
+          - generic [ref=f4e101]: Live 20 kHz
+          - generic [ref=f4e104] [cursor=pointer]:
+            - img "Avatar Operator" [ref=f4e106]
+            - generic [ref=f4e107]: Rudi Hartono
+      - generic [ref=f4e111]:
+        - generic [ref=f4e115]:
+          - heading "Panel Input Sensor Manual (12 Fitur)" [level=3] [ref=f4e116]
+          - paragraph [ref=f4e117]: Sesuaikan nilai getaran atau uji ketatnya validasi Pydantic backend FastAPI
+        - generic [ref=f4e118]:
+          - button "Simulasi Nilai Abnormal (Demo)" [ref=f4e119] [cursor=pointer]
+          - button "Buka Editor Parameter" [ref=f4e123] [cursor=pointer]
+      - generic [ref=f4e128]:
+        - generic [ref=f4e129]:
+          - heading "Ball Fault terdeteksi" [level=2] [ref=f4e130]
+          - paragraph [ref=f4e131]: Terdeteksi impuls getaran repetitif tinggi pada elemen bola (BSF). Hentikan operasi atau jadwalkan penggantian bearing segera untuk mencegah macet poros mendadak.
+          - generic [ref=f4e132]:
+            - generic [ref=f4e133]: Keyakinan 70.9%
+            - generic [ref=f4e134]: •
+            - generic [ref=f4e135]: Terdeteksi
+            - generic [ref=f4e136]: •
+            - generic [ref=f4e137]: Frekuensi Dominan 98.4 Hz
+        - generic [ref=f4e138]:
+          - generic [ref=f4e139]:
+            - generic [ref=f4e140]: Distribusi probabilitas
+            - generic [ref=f4e141]: Random Forest
+          - generic [ref=f4e143]:
+            - generic [ref=f4e144]: Normal
+            - generic [ref=f4e145]: 20%
+          - generic [ref=f4e149]:
+            - generic [ref=f4e150]: Outer Race (BPFO)
+            - generic [ref=f4e151]: 3%
+          - generic [ref=f4e155]:
+            - generic [ref=f4e156]: Inner Race (BPFI)
+            - generic [ref=f4e157]: 7%
+          - generic [ref=f4e161]:
+            - generic [ref=f4e162]: Ball Fault (BSF)
+            - generic [ref=f4e163]: 71%
+      - generic [ref=f4e166]:
+        - generic [ref=f4e167]: Memuat grafik spektrum FFT...
+        - generic [ref=f4e171]:
+          - generic [ref=f4e172]:
+            - generic [ref=f4e173]:
+              - heading "Rekomendasi Tindakan" [level=3] [ref=f4e174]
+              - paragraph [ref=f4e175]: Prosedur perawatan teknis bantalan
+            - generic [ref=f4e176]: ISO 20816
+          - generic [ref=f4e177]:
+            - paragraph [ref=f4e178]: Terdeteksi impuls getaran repetitif tinggi pada elemen bola (BSF). Hentikan operasi atau jadwalkan penggantian bearing segera untuk mencegah macet poros mendadak.
+            - generic [ref=f4e179]:
+              - generic [ref=f4e180]:
+                - generic [ref=f4e181]: Komponen
+                - generic [ref=f4e182]: Deep Groove Ball Bearing (Rolling Elements)
+              - generic [ref=f4e183]:
+                - generic [ref=f4e184]: Kode Suku Cadang
+                - generic [ref=f4e185]: SKF 6208-2RS
+              - generic [ref=f4e186]:
+                - generic [ref=f4e187]: Ketersediaan
+                - generic [ref=f4e188]: Stok 4 unit di rak B-14
+            - generic [ref=f4e189]:
+              - generic [ref=f4e190]:
+                - generic [ref=f4e191]: Klasifikasi ISO 20816
+                - generic [ref=f4e192]: Zona D (Kritis / Bahaya Kerusakan Total)
+              - generic [ref=f4e193]: "> 7.1 mm/s"
+          - generic [ref=f4e194]:
+            - button "Buat tiket perbaikan" [ref=f4e195] [cursor=pointer]
+            - button "Unduh laporan PDF spektrogram" [ref=f4e199] [cursor=pointer]
+      - generic [ref=f4e207]: Memuat bentuk gelombang domain waktu...
+      - generic [ref=f4e209]:
+        - generic [ref=f4e210]: VibraCheck · Sistem Pemantauan Getaran Industri Berstandar ISO 20816
+        - generic [ref=f4e211]: Random Forest Classifier (Macro F1 0.8014) · 12 Parameter Input
+  - button "Open Next.js Dev Tools" [ref=f4e217] [cursor=pointer]
+  - alert [ref=f4e221]

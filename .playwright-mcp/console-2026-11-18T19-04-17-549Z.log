@@ -1,0 +1,44 @@
+[    2869ms] [LOG] [Fast Refresh] done in 9030ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[    9242ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[    9558ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[   10000ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[   10359ms] [LOG] [Fast Refresh] done in 619ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[   11300ms] [ERROR] Invalid DOM property `%s`. Did you mean `%s`? stop-color stopColor @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:1037
+[   11306ms] [ERROR] Invalid DOM property `%s`. Did you mean `%s`? stop-opacity stopOpacity @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:1037
+[   13599ms] [WARNING] Image with src "/logo.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[   80248ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[   81436ms] [LOG] [Fast Refresh] done in 1292ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  234093ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  238680ms] ReferenceError: statusText is not defined
+    at DiagnosisCard (http://localhost:3000/_next/static/chunks/src_1e90k1lyp7l_-._.js?id=%255Bproject%255D/src/components/DiagnosisCard.tsx+%255Bapp-client%255D+(ecmascript):71:47)
+    at Object.react_stack_bottom_frame (http://localhost:3000/_next/static/chunks/1daa_next_dist_compiled_react-dom_cjs_react-dom-client_development_0mp0cp_t-ezj9.js:15013:24)
+    at renderWithHooks (http://localhost:3000/_next/static/chunks/1daa_next_dist_compiled_react-dom_cjs_react-dom-client_development_0mp0cp_t-ezj9.js:4451:24)
+    at updateFunctionComponent (http://localhost:3000/_next/static/chunks/1daa_next_dist_compiled_react-dom_cjs_react-dom-client_development_0mp0cp_t-ezj9.js:5923:21)
+    at beginWork (http://localhost:3000/_next/static/chunks/1daa_next_dist_compiled_react-dom_cjs_react-dom-client_development_0mp0cp_t-ezj9.js:6549:24)
+    at runWithFiberInDEV (http://localhost:3000/_next/static/chunks/1daa_next_dist_compiled_react-dom_cjs_react-dom-client_development_0mp0cp_t-ezj9.js:777:74)
+    at performUnitOfWork (http://localhost:3000/_next/static/chunks/1daa_next_dist_compiled_react-dom_cjs_react-dom-client_development_0mp0cp_t-ezj9.js:9440:97)
+    at workLoopSync (http://localhost:3000/_next/static/chunks/1daa_next_dist_compiled_react-dom_cjs_react-dom-client_development_0mp0cp_t-ezj9.js:9334:40)
+    at renderRootSync (http://localhost:3000/_next/static/chunks/1daa_next_dist_compiled_react-dom_cjs_react-dom-client_development_0mp0cp_t-ezj9.js:9318:13)
+    at performWorkOnRoot (http://localhost:3000/_next/static/chunks/1daa_next_dist_compiled_react-dom_cjs_react-dom-client_development_0mp0cp_t-ezj9.js:8984:47)
+    at performSyncWorkOnRoot (http://localhost:3000/_next/static/chunks/1daa_next_dist_compiled_react-dom_cjs_react-dom-client_development_0mp0cp_t-ezj9.js:10148:9)
+    at flushSyncWorkAcrossRoots_impl (http://localhost:3000/_next/static/chunks/1daa_next_dist_compiled_react-dom_cjs_react-dom-client_development_0mp0cp_t-ezj9.js:10064:316)
+    at flushSyncWork$1 (http://localhost:3000/_next/static/chunks/1daa_next_dist_compiled_react-dom_cjs_react-dom-client_development_0mp0cp_t-ezj9.js:9118:86)
+    at Object.scheduleRefresh (http://localhost:3000/_next/static/chunks/1daa_next_dist_compiled_react-dom_cjs_react-dom-client_development_0mp0cp_t-ezj9.js:82:13)
+    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcmz--cdp._.js:589:33
+    at Set.forEach (<anonymous>)
+    at Object.performReactRefresh (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcmz--cdp._.js:582:38)
+    at applyUpdate (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcmz--cdp._.js:137:31)
+    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcmz--cdp._.js:145:13
+[  238755ms] [LOG] [Fast Refresh] done in 3973ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  239009ms] [LOG] [Fast Refresh] done in 3973ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  264720ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  265766ms] [WARNING] [Fast Refresh] performing full reload because your application had an unrecoverable error @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  267781ms] [LOG] [Fast Refresh] done in 1150ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  280203ms] [LOG] [Fast Refresh] done in 1150ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  324916ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  326858ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  333563ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  335901ms] [ERROR] Invalid DOM property `%s`. Did you mean `%s`? stop-color stopColor @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:1037
+[  335914ms] [ERROR] Invalid DOM property `%s`. Did you mean `%s`? stop-opacity stopOpacity @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:1037
+[  340347ms] [WARNING] Image with src "/logo.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  340361ms] [LOG] [Fast Refresh] done in 6907ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761

@@ -1,0 +1,136 @@
+[     100ms] [LOG] [Fast Refresh] done in 255ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[     178ms] [LOG] [Fast Refresh] done in 255ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[    1465ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[    1779ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[    4321ms] [WARNING] Image with src "/logo.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  144138ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  144199ms] [LOG] [Fast Refresh] done in 88ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  180793ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  180857ms] [LOG] [Fast Refresh] done in 116ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  205923ms] [LOG] [Fast Refresh] done in 116ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  206746ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  206950ms] [LOG] [Fast Refresh] done in 288ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  207023ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  207101ms] [LOG] [Fast Refresh] done in 96ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  207374ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  207542ms] [LOG] [Fast Refresh] done in 121ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  207651ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  207855ms] [LOG] [Fast Refresh] done in 262ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  208095ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  208445ms] [LOG] [Fast Refresh] done in 316ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  208901ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  209026ms] [LOG] [Fast Refresh] done in 225ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  210830ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  210888ms] [LOG] [Fast Refresh] done in 162ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  321969ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  323248ms] [ERROR] ./src/components/WaveformChart.tsx:14:1
+Error: Export generateWaveformData doesn't exist in target module
+  12 |   ResponsiveContainer,
+  13 | } from "recharts";
+> 14 | import { generateWaveformData, WaveformPoint } from "@/lib/chartData";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { ScenarioPreset, SensorInput } from "@/types/bearing";
+  16 |
+  17 | interface WaveformChartProps {
+
+The export generateWaveformData was not found in module [project]/src/lib/chartData.ts [app-client] (ecmascript).
+Did you mean to import generateSpectrumData?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/WaveformChart.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/WaveformChart.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:1037
+[  323249ms] [ERROR] ./src/components/WaveformChart.tsx:14:1
+Error: Export generateWaveformData doesn't exist in target module
+  12 |   ResponsiveContainer,
+  13 | } from "recharts";
+> 14 | import { generateWaveformData, WaveformPoint } from "@/lib/chartData";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { ScenarioPreset, SensorInput } from "@/types/bearing";
+  16 |
+  17 | interface WaveformChartProps {
+
+The export generateWaveformData was not found in module [project]/src/lib/chartData.ts [app-ssr] (ecmascript).
+Did you mean to import generateSpectrumData?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/WaveformChart.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/WaveformChart.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:1037
+[  323733ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  323892ms] [ERROR] ./src/components/WaveformChart.tsx:14:1
+Error: Export generateWaveformData doesn't exist in target module
+  12 |   ResponsiveContainer,
+  13 | } from "recharts";
+> 14 | import { generateWaveformData, WaveformPoint } from "@/lib/chartData";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { ScenarioPreset, SensorInput } from "@/types/bearing";
+  16 |
+  17 | interface WaveformChartProps {
+
+The export generateWaveformData was not found in module [project]/src/lib/chartData.ts [app-client] (ecmascript).
+Did you mean to import generateSpectrumData?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/WaveformChart.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/WaveformChart.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:1037
+[  323893ms] [ERROR] ./src/components/WaveformChart.tsx:14:1
+Error: Export generateWaveformData doesn't exist in target module
+  12 |   ResponsiveContainer,
+  13 | } from "recharts";
+> 14 | import { generateWaveformData, WaveformPoint } from "@/lib/chartData";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  15 | import { ScenarioPreset, SensorInput } from "@/types/bearing";
+  16 |
+  17 | interface WaveformChartProps {
+
+The export generateWaveformData was not found in module [project]/src/lib/chartData.ts [app-ssr] (ecmascript).
+Did you mean to import generateSpectrumData?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/components/WaveformChart.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/WaveformChart.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:1037
+[  335165ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  335770ms] [LOG] [Fast Refresh] done in 631ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  335804ms] [LOG] [Fast Refresh] done in 631ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  336403ms] [LOG] [Fast Refresh] done in 631ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  474407ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  475493ms] [LOG] [Fast Refresh] done in 1079ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  489334ms] [LOG] [Fast Refresh] done in 1079ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  489474ms] [LOG] [Fast Refresh] done in 1079ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  489583ms] [LOG] [Fast Refresh] done in 1079ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  489633ms] [LOG] [Fast Refresh] done in 1079ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  490247ms] [LOG] [Fast Refresh] done in 1079ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  495249ms] [LOG] [Fast Refresh] done in 1079ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  497160ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761
+[  497349ms] [LOG] [Fast Refresh] done in 296ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1bjkg68unqmjx._.js:761

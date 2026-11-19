@@ -1,267 +1,329 @@
-# Machine Learning · MKB UPI · P3 Ship
+# Machine Learning - MKB UPI - P3 Ship: Industrial Bearing Diagnostic Hub (VibraCheck)
 
-Bahan hands-on P3 seri kuliah praktisi **From notebook to production**: model dari P2 kita kasih API dan
-tampilan, lalu di-deploy supaya bisa dipakai teknisi pabrik lewat link.
+Bahan hands-on P3 seri kuliah praktisi **From notebook to production**: model klasifikasi multikelas dari P2 dibungkus menjadi API industri berbasis FastAPI dan antarmuka web modern, siap digunakan oleh analis getaran dan teknisi pemeliharaan pabrik (*predictive maintenance*).
 
-**Kasus:** pabrik komponen otomotif ingin tahu mesin CNC mana yang kemungkinan **gagal dalam 24 jam**
-(predictive maintenance), supaya bisa diservis duluan.
+**Studi Kasus 04:** Analisis getaran akselerometer pada mesin rotasi pabrik semen untuk mendiagnosis kerusakan bantalan peluru (*bearing*) multikelas secara otomatis sebelum terjadi kegagalan fatal pada jalur produksi.
 
 ```
-P2 · Act (Colab, repo mkb-ml-p2)        P3 · Ship (repo ini)
-notebook ──► artifact_p2.zip ──► artifacts/ + src/ ──► FastAPI /predict ──► deploy
-             model.joblib                        └──► Streamlit UI ──────► link live
-             metadata.json
-             src/features.py
+P2: Act (Notebook Eksplorasi & Training)       P3: Ship (Repositori Produksi Ini)
+Colab/Local -> artifacts/ + src/               +-> FastAPI Service (app/api/main.py) -> Port 8000
+               - model.joblib (Random Forest)  +-> Mode A: Streamlit UI (app/ui/)    -> Port 8501
+               - metadata.json (Metrik & Skema)+-> Mode B: VibraCheck Next.js (web/) -> Port 3000
+               - src/features.py (Fisika Getaran)
 ```
 
-Daftar isi:
-[sebelum mulai](#sebelum-mulai-artifact-dari-p2) ·
-[siapkan repo](#p3--ship-1-siapkan-repo) ·
-[jalankan API](#p3--ship-2-jalankan-fastapi) ·
-[jalankan UI](#p3--ship-3-jalankan-streamlit) ·
-[checklist](#p3--ship-4-checklist-sebelum-online) ·
-[deploy](#p3--ship-5-deploy-gratis) ·
-[Docker](#docker) ·
-[error umum](#error-yang-hampir-pasti-kalian-temui)
+Daftar Isi:
+[1. Sekilas Model & Metrik](#1-sekilas-model--metrik) |
+[2. Arsitektur Sistem](#2-arsitektur-sistem) |
+[3. Panduan Menjalankan Mode B (FastAPI + Next.js)](#3-panduan-menjalankan-mode-b-fastapi--nextjs-frontend) |
+[4. Panduan Menjalankan Mode A (Streamlit)](#4-panduan-menjalankan-mode-a-monolitik-streamlit) |
+[5. Endpoint REST API](#5-endpoint-rest-api-fastapi) |
+[6. Verifikasi & Pengujian](#6-verifikasi--pengujian-otomatis) |
+[7. Struktur Direktori](#7-struktur-direktori-repositori) |
+[8. Panduan Deployment](#8-panduan-deployment-produksi)
 
 ---
 
-## Sebelum mulai: artifact dari P2
+## 1. Sekilas Model & Metrik
 
-Di akhir P2 kalian mengunduh **`artifact_p2.zip`**. Isinya tiga file, dan cuma itu yang dibutuhkan untuk deploy:
+Model machine learning dilatih menggunakan data getaran berlabel dari sensor akselerometer resolusi tinggi (15.220 rekaman data observasi 1 detik independen).
 
-```
-artifacts/model.joblib     pipeline lengkap: fitur + preprocessing + model
-artifacts/metadata.json    versi model, fitur_input, threshold, metrik, versi library
-src/features.py            fitur fisika; dipakai saat training DAN saat prediksi
-```
-
-Zip-nya hilang atau P2 belum selesai? Buka lagi notebook P2 di
-[Colab](https://colab.research.google.com/github/nurhikam/mkb-ml-p2/blob/main/notebooks/P2_Act_STUDENT.ipynb).
-Atau langsung lanjut saja: repo ini sudah membawa **contoh artifact** di `artifacts/`, jadi P3 tetap bisa
-diikuti sampai akhir.
+- **Tipe Tugas:** Klasifikasi Multikelas (4 Kelas Kondisi Bantalan):
+  - `normal` : Bantalan beroperasi dalam batas getaran standar ISO 20816 (Zona A/B).
+  - `outer_race` : Kerusakan lokal pada lintasan luar (*Outer Race Defect* - BPFO).
+  - `inner_race` : Kerusakan lokal pada lintasan dalam (*Inner Race Defect* - BPFI).
+  - `bola` : Kerusakan pada elemen penggelinding (*Ball Fault* - BSF).
+- **Algoritma Terpilih:** **Random Forest Classifier** (200 *decision trees*, pembobotan kelas seimbang, *max depth* 20).
+- **Performa Evaluasi (Test Set 20% Stratified - 3.044 sampel):**
+  - **Macro F1-Score:** `0.8014` (Melampaui baseline Logistic Regression `0.6909`, peningkatan +0.1105).
+  - **Akurasi Keseluruhan:** `84.0%`.
+  - **F1-Score per Kelas:**
+    - `normal`: 0.8751 (Precision: 80.3%, Recall: 96.1%)
+    - `outer_race`: 0.8238 (Precision: 91.5%, Recall: 74.9%)
+    - `inner_race`: 0.7655 (Precision: 89.2%, Recall: 67.0%)
+    - `bola`: 0.7410 (Precision: 92.5%, Recall: 61.8%)
+- **Fitur Fisika Getaran (12 Fitur Input):**
+  - Domain Waktu & Operasional: `posisi_sensor` (drive_end / non_drive_end), `kecepatan_rpm`, `beban_kN`, `suhu_housing_C`, `rms_g`, `puncak_g`, `kurtosis`, `crest_factor`.
+  - Domain Frekuensi (FFT): `energi_bpfo`, `energi_bpfi`, `energi_bsf`, `frekuensi_dominan_hz`.
+- **Fitur Rekayasa Tambahan (`src/features.py`):** Rasio frekuensi harmonik rotasi, total energi cacat, rasio getaran terhadap beban, indeks keparahan ISO, dan diferensial energi BPFI/BPFO.
 
 ---
 
-## P3 · Ship 1: siapkan repo
+## 2. Arsitektur Sistem
 
-**Fork** repo ini ke akun GitHub kalian (tombol *Fork* kanan atas), lalu clone fork-nya:
+Aplikasi mendukung 2 mode deployment:
 
-```bash
-git clone https://github.com/<username>/mkb-ml-p3.git
-cd mkb-ml-p3
+| Karakteristik | Mode A: Monolitik Streamlit | Mode B: Decoupled Industrial Web (VibraCheck) |
+|---|---|---|
+| **Frontend** | Streamlit Python (`app/ui/streamlit_app.py`) | Next.js 16 (App Router), TypeScript, Tailwind CSS (`web/`) |
+| **Backend / Inferensi** | Terintegrasi langsung dalam proses Python yang sama | FastAPI Service mandiri via REST API (`app/api/main.py`) |
+| **Visualisasi Sinyal** | Matplotlib / Altair statis | Recharts responsif: Spektrum FFT & Gelombang Domain Waktu |
+| **Validasi Input** | Form Streamlit standar | Skema Pydantic v2 ketat (HTTP 422 jika input tidak realistis) |
+| **Target Pengguna** | Demonstrasi cepat, prototipe lokal | Analis keandalan pabrik (*Reliability Engineer*), integrasi SCADA/IoT |
+| **Skalabilitas** | Skala vertikal tunggal | Skala independen antara API microservice dan antarmuka web |
+
+---
+
+## 3. Panduan Menjalankan Mode B (FastAPI + Next.js Frontend)
+
+Mode B adalah arsitektur decoupled berstandar industri dengan backend FastAPI di port 8000 dan antarmuka web Next.js (VibraCheck) di port 3000.
+
+### Prasyarat
+- Python 3.10+ (disarankan Python 3.12 atau 3.14)
+- Node.js 18.18+ atau Node.js 20+ dan npm
+- Git
+
+### Langkah 1: Persiapan Lingkungan Python & Backend API
+Buka Terminal 1 di root direktori repositori:
+
+```powershell
+# 1. Buat dan aktifkan virtual environment
 python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+.\.venv\Scripts\activate      # Untuk Windows PowerShell
+# source .venv/bin/activate   # Untuk Linux / macOS
+
+# 2. Instal dependensi backend
 pip install -r requirements-dev.txt
-pytest                             # 14 tes harus lolos dengan contoh artifact
+
+# 3. Jalankan server backend FastAPI
+uvicorn app.api.main:app --reload --port 8000
 ```
 
-> Tidak mau install apa pun di laptop? Lewati bagian lokal: langsung ke [deploy](#p3--ship-5-deploy-gratis).
-> Streamlit Community Cloud bisa deploy langsung dari fork kalian.
+Backend FastAPI akan aktif di:
+- **API Base URL:** `http://127.0.0.1:8000`
+- **Swagger UI Interaktif:** `http://127.0.0.1:8000/docs`
+- **Health Check Endpoint:** `http://127.0.0.1:8000/health`
 
-### Pakai model kalian sendiri
+### Langkah 2: Persiapan & Menjalankan Frontend Next.js (VibraCheck)
+Buka Terminal 2 baru:
 
-1. Ekstrak `artifact_p2.zip` **di root repo**. Path di dalam zip sudah cocok, jadi file lama tertimpa:
-   `artifacts/model.joblib`, `artifacts/metadata.json`, `src/features.py`.
-2. Buka `artifacts/metadata.json` → `versi_library`, lalu samakan versi di `requirements.txt`:
+```powershell
+# 1. Masuk ke direktori web
+cd web
 
-   ```json
-   "versi_library": {"python": "3.12.x", "sklearn": "1.6.1", "xgboost": "2.1.4", "pandas": "2.2.2"}
-   ```
-   ```text
-   scikit-learn==1.6.1
-   xgboost-cpu==2.1.4
-   pandas==2.2.2
-   ```
-   Model yang di-load dengan versi scikit-learn berbeda bisa memberi hasil lain tanpa error yang jelas.
-   Itu sebabnya versinya di-pin, bukan dibiarkan "terbaru".
-3. `pip install -r requirements-dev.txt` lagi, lalu `pytest`. Kalau lolos, model kalian siap.
-4. Commit dan push:
+# 2. Pastikan file konfigurasi environment tersedia
+# File web/.env.local sudah disediakan dengan isi:
+# NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
 
-   ```bash
-   git add artifacts src requirements.txt
-   git commit -m "model P2 saya"
-   git push
-   ```
+# 3. Instal dependensi npm (jika belum)
+npm install
 
-### Struktur repo
+# 4. Jalankan development server
+npm run dev
+```
 
-| Path | Isi |
-|---|---|
-| `data/contoh_batch.csv` | 12 mesin untuk mencoba prediksi batch di UI |
-| `artifacts/` | `model.joblib` + `metadata.json` (contoh; ganti dengan punya kalian) |
-| `src/features.py` | fitur fisika, dipakai training dan serving |
-| `app/predictor.py` | load artifact sekali, lalu prediksi (dipakai API dan UI) |
-| `app/api/main.py` | FastAPI: `/predict`, `/predict/batch`, `/health`, `/docs` |
-| `app/ui/streamlit_app.py` | UI Streamlit: form, hasil berwarna, JSON, upload CSV |
-| `tests/test_api.py` | smoke test: input normal, ekstrem, tidak valid |
-| `Dockerfile` | satu image untuk API (default) atau UI |
-| `requirements.txt` | versi library di-pin sama dengan saat training |
+Buka peramban (*browser*) Anda di:
+- **Dashboard VibraCheck:** `http://localhost:3000`
+
+### Fitur Utama Dashboard VibraCheck (Mode B):
+1. **Header Kendali & Quick Presets:** 4 tombol skenario cepat (*Normal*, *Outer Race*, *Inner Race*, *Ball Fault*) untuk mengisi data sensor dan menjalankan inferensi langsung.
+2. **Kartu Diagnosa Utama:** Status bahaya semantik (AMAN, WASPADA, KRITIS), persentase keyakinan model, penjelasan mekanis kerusakan, dan visualisasi distribusi probabilitas 4 kelas.
+3. **Spektrum Akselerasi FFT (Recharts):** Grafik spektral domain frekuensi lengkap dengan garis ambang batas kritis 1.20 g pk dan penanda puncak frekuensi cacat (BPFO, BPFI, BSF).
+4. **Bentuk Gelombang Domain Waktu (Recharts):** Grafik amplitudo akselerasi getaran terhadap waktu dengan kalkulasi metrik Peak-to-Peak (pk-pk) dan RMS.
+5. **Rekomendasi Suku Cadang & Standar ISO 20816:** Nomor part bearing, status stok gudang, zonasi getaran ISO, tombol pembuatan tiket kerja (*work order*), serta ekspor ringkasan CSV.
+6. **Panel Input Sensor Manual & Uji Demo 422:** Panel akordeon interaktif untuk mengubah nilai 12 fitur sensor manual, disertai tombol uji coba input ekstrem/negatif untuk mendemonstrasikan penolakan error validasi Pydantic HTTP 422 secara transparan.
+7. **Tab Armada Mesin (Batch CSV):** Pemrosesan batch banyak mesin secara simultan via `POST /predict/batch`, tabel ringkasan status armada, filter kategori, unduh CSV hasil analisis, serta penampil raw JSON Request dan Response.
 
 ---
 
-## P3 · Ship 2: jalankan FastAPI
+## 4. Panduan Menjalankan Mode A (Monolitik Streamlit)
 
-```bash
-uvicorn app.api.main:app --reload
-```
+Jika Anda ingin menjalankan antarmuka Python Streamlit monolitik sederhana:
 
-Buka **http://127.0.0.1:8000/docs**. Swagger UI ini dibuat otomatis oleh FastAPI: klik `POST /predict` →
-*Try it out* → *Execute*.
-
-Satu endpoint FastAPI berisi tiga bagian (lihat `app/api/main.py`):
-
-1. **Load sekali saat startup**, bukan per request (`lifespan` → `predictor.load()`).
-2. **Validasi** dengan Pydantic (`InputData`): `tipe_produk` harus L/M/H, `kecepatan_rpm` 500–4000, torsi tidak
-   boleh negatif, dst. Input yang salah ditolak **422** sebelum menyentuh model.
-3. **JSON keluar** dari `POST /predict`.
-
-Request:
-
-```bash
-curl -X POST http://127.0.0.1:8000/predict -H "Content-Type: application/json" -d '{
-  "tipe_produk": "L", "suhu_udara_K": 301.2, "suhu_proses_K": 310.8, "kecepatan_rpm": 1290,
-  "torsi_Nm": 62.5, "keausan_tool_menit": 228, "getaran_mm_s": 4.1, "jam_sejak_servis": 410,
-  "shift_operator": "malam"}'
-```
-
-Response:
-
-```json
-{"probabilitas_gagal": 0.9781, "status": "SEGERA SERVIS", "threshold": 0.16, "versi_model": "1.0.0", "latency_ms": 12.9}
-```
-
-Coba kirim `"tipe_produk": "X"` atau `"kecepatan_rpm": 9000`: hasilnya **422 Unprocessable Entity**, dan field
-`detail` menyebut field mana yang salah. Itu validasi yang sedang bekerja, bukan bug.
-
-Sensor rusak boleh dikirim sebagai `null`; pipeline mengisinya dengan median data training.
-
-| Endpoint | Fungsi |
-|---|---|
-| `GET /health` | cek server hidup + versi model, threshold, daftar fitur |
-| `POST /predict` | satu mesin |
-| `POST /predict/batch` | list mesin (maks 1000 per request) |
-| `GET /docs` | dokumentasi interaktif |
-
-Setiap prediksi di-log ke terminal (input + output) supaya bisa diaudit.
-
----
-
-## P3 · Ship 3: jalankan Streamlit
-
-```bash
+```powershell
+# Jalankan langsung dari root repositori:
 streamlit run app/ui/streamlit_app.py
 ```
 
-Buka **http://localhost:8501**. Isinya form kondisi mesin, hasil berwarna (merah = SEGERA SERVIS, hijau = AMAN),
-tampilan request/response JSON, dan tab **Banyak mesin (CSV)** untuk upload `data/contoh_batch.csv`.
-
-| | Mode A (default) | Mode B (poin bonus) |
-|---|---|---|
-| Cara pakai | `API_URL` kosong | `API_URL=https://...` |
-| Model jalan di | Streamlit itu sendiri | FastAPI terpisah |
-| Deploy | 1 (Streamlit Cloud) | 2 (UI + API) |
-| Cocok untuk | demo, hands-on hari ini | arsitektur industri: UI dan model di-scale terpisah |
-
-Mode B lokal (API dan UI di dua terminal):
-
-```bash
-uvicorn app.api.main:app --port 8000                                  # terminal 1
-API_URL=http://127.0.0.1:8000 streamlit run app/ui/streamlit_app.py   # terminal 2
+Peramban akan terbuka otomatis di `http://localhost:8501`.
+Untuk menghubungkan Streamlit ke server FastAPI eksternal, tentukan variabel lingkungan:
+```powershell
+$env:API_URL="http://127.0.0.1:8000"
+streamlit run app/ui/streamlit_app.py
 ```
 
 ---
 
-## P3 · Ship 4: checklist sebelum online
+## 5. Endpoint REST API (FastAPI)
 
-| # | Cek | Di repo ini |
+Backend FastAPI menyediakan dokumentasi OpenAPI interaktif yang dapat diakses langsung pada `http://127.0.0.1:8000/docs`.
+
+### Ringkasan Endpoint
+
+| Metode | Path | Deskripsi |
 |---|---|---|
-| 1 | Model mengalahkan baseline di test set | `metadata.json` → `metrik_test` (PR-AUC 0.695 vs acak ~0.055) |
-| 2 | Metadata lengkap | `artifacts/metadata.json` |
-| 3 | Versi library di-pin = saat training | `requirements.txt` vs `metadata.json` → `versi_library` |
-| 4 | Fitur diambil dari `src/features.py` | pipeline memanggil `tambah_fitur` dari sana |
-| 5 | Input divalidasi Pydantic | `InputData` di `app/api/main.py` |
-| 6 | Ada endpoint `/health` | `GET /health` |
-| 7 | Setiap prediksi di-log | `_log()` di `app/api/main.py` |
-| 8 | Smoke test: normal, ekstrem, tidak valid | `pytest` (`tests/test_api.py`) |
+| `GET` | `/health` | Memeriksa ketersediaan layanan, versi model, skor Macro F1, dan daftar 12 fitur input. |
+| `POST` | `/predict` | Mendiagnosis satu observasi getaran mesin dengan validasi Pydantic ketat. |
+| `POST` | `/predict/batch` | Mendiagnosis daftar observasi getaran (hingga 1.000 mesin dalam satu request). |
+| `GET` | `/docs` | Dokumentasi antarmuka Swagger UI. |
 
----
+### Contoh Pemanggilan `POST /predict`
 
-## P3 · Ship 5: deploy gratis
-
-Syarat free tier sering berubah; cek lagi sebelum dipakai.
-
-### A. Streamlit Community Cloud (UI, paling gampang; ini yang dipakai di kelas)
-
-1. Pastikan `artifacts/model.joblib` sudah ter-push ke fork kalian (buka di GitHub dan lihat apakah file-nya ada).
-2. Buka **https://share.streamlit.io** dan login dengan GitHub.
-3. **Create app** → *Deploy a public app from GitHub*.
-4. Isi: repository `<username>/mkb-ml-p3`, branch `main`, main file path **`app/ui/streamlit_app.py`**.
-5. **Advanced settings** → Python version: samakan dengan `versi_library.python` di metadata (contoh: 3.12).
-6. **Deploy**. Build pertama butuh beberapa menit karena menginstal `requirements.txt`.
-7. Smoke test dari link-nya: input normal, input ekstrem (rpm 4000, keausan 500), lalu upload CSV.
-8. Tempel link app kalian di chat kelas.
-
-### B. Hugging Face Spaces (API dengan Docker)
-
-1. **https://huggingface.co/new-space** → nama bebas, SDK **Docker** → *Blank* → Create.
-2. Clone Space-nya, salin isi repo ini ke dalamnya, lalu push:
-
-   ```bash
-   git clone https://huggingface.co/spaces/<username>/<nama-space>
-   cp -r app src artifacts requirements.txt Dockerfile ../<nama-space>/
-   mkdir -p ../<nama-space>/data && cp data/contoh_batch.csv ../<nama-space>/data/
-   cd ../<nama-space> && git add . && git commit -m "API prediksi mesin" && git push
-   ```
-   Jangan timpa `README.md` milik Space: header YAML di dalamnya (`sdk: docker`) yang memberi tahu
-   Hugging Face cara menjalankan Space. Dockerfile repo ini sudah memakai port 7860, port bawaan Spaces.
-3. Setelah status *Running*, API ada di `https://<username>-<nama-space>.hf.space/docs`.
-4. **Mode B:** di Streamlit Cloud → app kalian → **Settings → Secrets**, isi:
-
-   ```toml
-   API_URL = "https://<username>-<nama-space>.hf.space"
-   ```
-   Simpan; app restart dan banner atas berubah jadi *Mode B · memanggil API*.
-
-### C. Render (API dari repo)
-
-1. **https://render.com** → *New* → *Web Service* → pilih fork kalian.
-2. Runtime **Docker** (Render mendeteksi `Dockerfile` otomatis), instance type *Free* → Deploy.
-3. API ada di `https://<nama>.onrender.com/docs`. Free tier **tidur** kalau lama tidak dipakai, jadi request
-   pertama setelah sepi bisa butuh ~1 menit. UI Streamlit sudah menunggu sampai 60 detik.
-
----
-
-## Docker
-
-"Works on my machine." "Then we'll ship your machine." Docker mengirim seluruh environment (versi Python
-dan library), bukan cuma file `.joblib`.
-
+**Request:**
 ```bash
-docker build -t mesin-cnc .
-docker run -p 7860:7860 mesin-cnc                 # FastAPI  → http://localhost:7860/docs
-docker run -p 7860:7860 -e APP=ui mesin-cnc       # Streamlit → http://localhost:7860
+curl -X POST http://127.0.0.1:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "posisi_sensor": "drive_end",
+    "kecepatan_rpm": 1780.0,
+    "beban_kN": 6.2,
+    "suhu_housing_C": 68.5,
+    "rms_g": 0.82,
+    "puncak_g": 3.45,
+    "kurtosis": 5.4,
+    "crest_factor": 4.2,
+    "energi_bpfo": 0.08,
+    "energi_bpfi": 0.72,
+    "energi_bsf": 0.05,
+    "frekuensi_dominan_hz": 158.0
+  }'
+```
+
+**Response (HTTP 200 OK):**
+```json
+{
+  "kelas_prediksi": "Inner Race",
+  "status_bahaya": "KRITIS",
+  "keyakinan": 0.892,
+  "distribusi_probabilitas": {
+    "Normal": 0.018,
+    "Outer Race": 0.045,
+    "Inner Race": 0.892,
+    "Ball Fault": 0.045
+  },
+  "rekomendasi": {
+    "tindakan": "Jadwalkan penggantian bantalan segera. Pantau tren kenaikan suhu housing.",
+    "komponen": "Bearing Inner Ring / Cincin Dalam Bantalan Baru",
+    "kode_suku_cadang": "BRG-6205-IR-C3",
+    "ketersediaan": "Tersedia di Gudang Sentral",
+    "zona_iso_20816": "Zona D (Kritis)"
+  },
+  "versi_model": "1.0.0",
+  "latency_ms": 14.8
+}
+```
+
+### Demonstrasi Validasi Error (HTTP 422 Unprocessable Entity)
+Jika input memuat nilai yang tidak realistis (misalnya `kecepatan_rpm: -500` atau `crest_factor: -2`), backend akan menolak request secara aman sebelum memproses ke model:
+
+```json
+{
+  "detail": [
+    {
+      "type": "greater_than_equal",
+      "loc": ["body", "kecepatan_rpm"],
+      "msg": "Input should be greater than or equal to 0",
+      "input": -500.0
+    }
+  ]
+}
 ```
 
 ---
 
-## Error yang hampir pasti kalian temui
+## 6. Verifikasi & Pengujian Otomatis
 
-| Error | Penyebab | Solusi |
-|---|---|---|
-| `No module named 'src'` | folder `src/` tidak ada, atau dijalankan bukan dari root repo | pastikan `src/features.py` ada; jalankan perintah dari root repo |
-| `InconsistentVersionWarning` | versi scikit-learn beda dengan saat training | samakan `requirements.txt` dengan `metadata.json` → `versi_library` |
-| `KeyError: 'torsi_Nm'` | nama kolom/field beda | cocokkan dengan `fitur_input` di `metadata.json` |
-| `422 Unprocessable Entity` | input gagal validasi | baca field `detail`: ia menyebut field dan alasannya |
-| `model.joblib tidak ada` di server | artifact tidak ter-commit | cek file-nya ada di GitHub; jangan masukkan `artifacts/` ke `.gitignore` |
-| `AttributeError: Can't get attribute 'tambah_fitur'` | `src/features.py` beda dengan saat training | pakai `src/features.py` dari `artifact_p2.zip` yang sama dengan modelnya |
+Proyek ini dilengkapi dengan pengujian unit dan integrasi otomatis yang ketat:
 
-Setiap pesan error adalah petunjuk. Mentok? Tanya di QnA kelas dan **tempel pesan error lengkapnya**.
+### 1. Pengujian Backend API (`pytest`)
+Menjalankan 26 uji fungsional: verifikasi CORS middleware, endpoint health check, batas nilai ekstrem, case formatting, penolakan input negatif / string kosong, hingga kalkulasi batch.
+
+```powershell
+.\.venv\Scripts\pytest.exe -v
+```
+*Status: 26 passed (100% lulus).*
+
+### 2. Pengujian Kompilasi Frontend Next.js (`npm run build`)
+Memverifikasi static type checking TypeScript, validasi ESLint, dan optimasi aset Turbopack.
+
+```powershell
+cd web
+npm run build
+```
+*Status: Compiled successfully, 0 errors, static pages prerendered.*
 
 ---
 
-## Tentang data
+## 7. Struktur Direktori Repositori
 
-Datanya **sintetis**: data pabrik asli hampir selalu rahasia. Strukturnya meniru data sensor mesin perkakas
-(terinspirasi dataset AI4I 2020) dan sengaja dikotori: duplikat, nilai sensor mustahil, nilai kosong, typo
-kategori. Dataset dan skrip pembuatnya ada di repo [mkb-ml-p2](https://github.com/nurhikam/mkb-ml-p2).
+```
+mkb-ml-p3/
+├── artifacts/
+│   ├── metadata.json           # Metadata model, skema fitur, metrik F1 & akurasi
+│   └── model.joblib            # Pipeline scikit-learn Random Forest terlatih
+├── src/
+│   ├── __init__.py
+│   └── features.py             # Kalkulasi fitur fisika getaran (rotasi, rasio harmonik, indeks ISO)
+├── app/
+│   ├── predictor.py            # Modul pemuatan artifact & inferensi terpusat
+│   ├── api/
+│   │   ├── __init__.py
+│   │   └── main.py             # FastAPI REST Service (CORS, validasi Pydantic, health, predict)
+│   └── ui/
+│       ├── streamlit_app.py    # Aplikasi Streamlit (Mode A)
+│       └── assets/
+│           └── logo.jpg        # Identitas visual logo aplikasi
+├── data/
+│   └── contoh_batch.csv        # Berkas contoh data getaran untuk uji coba batch
+├── tests/
+│   ├── __init__.py
+│   └── test_api.py             # 26 pengujian otomatis pytest
+├── web/                        # Aplikasi Frontend Next.js 16 (Mode B - VibraCheck)
+│   ├── .env.example            # Template variabel lingkungan
+│   ├── .env.local              # Konfigurasi URL API lokal (NEXT_PUBLIC_API_URL)
+│   ├── DESIGN.md               # Pedoman sistem desain industri anti-slop
+│   ├── package.json            # Dependensi (Next.js, React 19, Lucide, Recharts)
+│   ├── tsconfig.json           # Konfigurasi TypeScript
+│   ├── public/
+│   │   ├── logo.jpg            # Aset logo merek VibraCheck
+│   │   └── contoh_batch.csv    # Berkas sampel untuk demo batch frontend
+│   └── src/
+│       ├── app/
+│       │   ├── layout.tsx      # Root layout dengan font Inter & metadata
+│       │   ├── page.tsx        # Dashboard koordinasi utama (Bento grid)
+│       │   └── globals.css     # Palet warna Tailwind CSS v4
+│       ├── components/
+│       │   ├── Sidebar.tsx             # Navigasi kiri & status kesehatan model
+│       │   ├── TopBar.tsx              # Pemilih unit mesin & quick preset pills
+│       │   ├── DiagnosisCard.tsx       # Kartu status diagnosa utama & probabilitas
+│       │   ├── SpectrumChart.tsx       # Grafik spektrum FFT akselerasi (Recharts)
+│       │   ├── WaveformChart.tsx       # Grafik gelombang domain waktu (Recharts)
+│       │   ├── RecommendationCard.tsx  # Informasi suku cadang & standar ISO 20816
+│       │   ├── SensorInputPanel.tsx    # Panel input manual 12 fitur & demo 422
+│       │   └── BatchTab.tsx            # Analisis armada mesin multi-mesin (CSV)
+│       ├── lib/
+│       │   ├── api.ts          # Klien HTTP terisolasi dengan penanganan fallback
+│       │   └── chartData.ts    # Generator data FFT & bentuk gelombang sintesis
+│       └── types/
+│           └── bearing.ts      # Definisi antarmuka TypeScript untuk skema sensor & respons
+├── Dockerfile                  # Konfigurasi container Docker multi-tahap
+├── requirements.txt            # Dependensi produksi Python (versi ter-pin)
+├── requirements-dev.txt        # Dependensi pengembangan & pengujian
+└── README.md                   # Dokumentasi teknis proyek
+```
+
+---
+
+## 8. Panduan Deployment Produksi
+
+### Opsi A: Deployment Frontend Next.js ke Vercel
+1. Hubungkan repositori GitHub Anda ke [Vercel](https://vercel.com).
+2. Atur **Root Directory** ke folder `web`.
+3. Tambahkan Environment Variable di Vercel:
+   - `NEXT_PUBLIC_API_URL` = URL FastAPI Anda yang telah di-deploy (misalnya `https://api-vibracheck.onrender.com`).
+4. Klik **Deploy**.
+
+### Opsi B: Deployment Backend FastAPI ke Render / Hugging Face Spaces
+1. Hubungkan repositori ke platform hosting Docker (Render atau Hugging Face Spaces).
+2. Tentukan target container port ke `7860` (atau port bawaan platform).
+3. Setelah service aktif, pasang URL endpoint tersebut ke variabel `NEXT_PUBLIC_API_URL` pada frontend.
+
+### Opsi C: Menjalankan via Docker Lokal
+```bash
+# Build image Docker
+docker build -t vibracheck-backend .
+
+# Jalankan container backend di port 7860
+docker run -p 7860:7860 vibracheck-backend
+```
+Akses Swagger UI di `http://localhost:7860/docs`.

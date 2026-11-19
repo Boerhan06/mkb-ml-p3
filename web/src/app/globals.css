@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@layer base {
+  *,
+  html,
+  body {
+    font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  .tabular-nums,
+  td,
+  th,
+  code,
+  pre {
+    font-feature-settings: "tnum" 1, "cv05" 1;
+  }
+}
+
+/* Custom Scrollbar Industrial */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: #AEC3B0;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}

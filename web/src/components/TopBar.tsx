@@ -161,6 +161,7 @@ export default function TopBar({
                   src={currentProfile.avatar}
                   alt="Avatar Operator"
                   fill
+                  sizes="20px"
                   className="object-cover"
                 />
               </div>
@@ -208,6 +209,7 @@ export default function TopBar({
                                 src={profile.avatar}
                                 alt={profile.name}
                                 fill
+                                sizes="24px"
                                 className="object-cover"
                               />
                             </div>

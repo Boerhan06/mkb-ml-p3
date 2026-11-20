@@ -113,6 +113,7 @@ export default function Sidebar({
               src="/logo.png"
               alt="VibraCheck Logo"
               fill
+              sizes="28px"
               className="object-cover"
               priority
             />
@@ -363,6 +364,7 @@ export default function Sidebar({
                 src={currentProfile.avatar}
                 alt="Avatar Operator"
                 fill
+                sizes="32px"
                 className="object-cover"
               />
             </div>

@@ -1,165 +1,264 @@
-# Machine Learning - MKB UPI - P3 Ship: Industrial Bearing Diagnostic Hub (VibraCheck)
+<p align="center">
+  <img src="web/public/logo.jpg" alt="VibraCheck" width="120" height="120" style="border-radius: 24px;" />
+</p>
 
-Bahan hands-on P3 seri kuliah praktisi **From notebook to production**: model klasifikasi multikelas dari P2 dibungkus menjadi API industri berbasis FastAPI dan antarmuka web modern, siap digunakan oleh analis getaran dan teknisi pemeliharaan pabrik (*predictive maintenance*).
+<h1 align="center">VibraCheck</h1>
+<p align="center"><b>Industrial Bearing Diagnostic Hub</b></p>
 
-**Studi Kasus 04:** Analisis getaran akselerometer pada mesin rotasi pabrik semen untuk mendiagnosis kerusakan bantalan peluru (*bearing*) multikelas secara otomatis sebelum terjadi kegagalan fatal pada jalur produksi.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/FastAPI-0.162-009688?logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/Next.js-16.4-000000?logo=next.js&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/React-19.3-61DAFB?logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind" />
+  <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Macro_F1-0.8014-1B4332" alt="F1" />
+  <img src="https://img.shields.io/badge/Accuracy-84%25-2D5A43" alt="Accuracy" />
+  <img src="https://img.shields.io/badge/Tests-26_passed-brightgreen" alt="Tests" />
+</p>
 
-```
-P2: Act (Notebook Eksplorasi & Training)       P3: Ship (Repositori Produksi Ini)
-Colab/Local -> artifacts/ + src/               +-> FastAPI Service (app/api/main.py) -> Port 8000
-               - model.joblib (Random Forest)  +-> Mode A: Streamlit UI (app/ui/)    -> Port 8501
-               - metadata.json (Metrik & Skema)+-> Mode B: VibraCheck Next.js (web/) -> Port 3000
-               - src/features.py (Fisika Getaran)
-```
-
-Daftar Isi:
-[1. Sekilas Model & Metrik](#1-sekilas-model--metrik) |
-[2. Arsitektur Sistem](#2-arsitektur-sistem) |
-[3. Panduan Menjalankan Mode B (FastAPI + Next.js)](#3-panduan-menjalankan-mode-b-fastapi--nextjs-frontend) |
-[4. Panduan Menjalankan Mode A (Streamlit)](#4-panduan-menjalankan-mode-a-monolitik-streamlit) |
-[5. Endpoint REST API](#5-endpoint-rest-api-fastapi) |
-[6. Verifikasi & Pengujian](#6-verifikasi--pengujian-otomatis) |
-[7. Struktur Direktori](#7-struktur-direktori-repositori) |
-[8. Panduan Deployment](#8-panduan-deployment-produksi)
-
----
-
-## 1. Sekilas Model & Metrik
-
-Model machine learning dilatih menggunakan data getaran berlabel dari sensor akselerometer resolusi tinggi (15.220 rekaman data observasi 1 detik independen).
-
-- **Tipe Tugas:** Klasifikasi Multikelas (4 Kelas Kondisi Bantalan):
-  - `normal` : Bantalan beroperasi dalam batas getaran standar ISO 20816 (Zona A/B).
-  - `outer_race` : Kerusakan lokal pada lintasan luar (*Outer Race Defect* - BPFO).
-  - `inner_race` : Kerusakan lokal pada lintasan dalam (*Inner Race Defect* - BPFI).
-  - `bola` : Kerusakan pada elemen penggelinding (*Ball Fault* - BSF).
-- **Algoritma Terpilih:** **Random Forest Classifier** (200 *decision trees*, pembobotan kelas seimbang, *max depth* 20).
-- **Performa Evaluasi (Test Set 20% Stratified - 3.044 sampel):**
-  - **Macro F1-Score:** `0.8014` (Melampaui baseline Logistic Regression `0.6909`, peningkatan +0.1105).
-  - **Akurasi Keseluruhan:** `84.0%`.
-  - **F1-Score per Kelas:**
-    - `normal`: 0.8751 (Precision: 80.3%, Recall: 96.1%)
-    - `outer_race`: 0.8238 (Precision: 91.5%, Recall: 74.9%)
-    - `inner_race`: 0.7655 (Precision: 89.2%, Recall: 67.0%)
-    - `bola`: 0.7410 (Precision: 92.5%, Recall: 61.8%)
-- **Fitur Fisika Getaran (12 Fitur Input):**
-  - Domain Waktu & Operasional: `posisi_sensor` (drive_end / non_drive_end), `kecepatan_rpm`, `beban_kN`, `suhu_housing_C`, `rms_g`, `puncak_g`, `kurtosis`, `crest_factor`.
-  - Domain Frekuensi (FFT): `energi_bpfo`, `energi_bpfi`, `energi_bsf`, `frekuensi_dominan_hz`.
-- **Fitur Rekayasa Tambahan (`src/features.py`):** Rasio frekuensi harmonik rotasi, total energi cacat, rasio getaran terhadap beban, indeks keparahan ISO, dan diferensial energi BPFI/BPFO.
+<p align="center">
+  Sistem diagnosis kerusakan bantalan mesin pabrik semen berbasis analisis getaran akselerometer & <i>Random Forest</i> multikelas — dikemas dalam arsitektur decoupled <b>FastAPI + Next.js</b> berstandar industri.
+</p>
 
 ---
 
-## 2. Arsitektur Sistem
+## Daftar Isi
 
-Aplikasi mendukung 2 mode deployment:
+- [Fitur Utama](#-fitur-utama)
+- [Tech Stack](#-tech-stack)
+- [Quick Start](#-quick-start)
+- [Arsitektur](#-arsitektur)
+- [Performa Model](#-performa-model)
+- [REST API](#-rest-api)
+- [Struktur Proyek](#-struktur-proyek)
+- [npm Scripts](#-npm-scripts)
+- [Testing](#-testing)
+- [Deployment](#-deployment)
+- [Sistem Desain](#-sistem-desain)
+- [Kredit](#-kredit)
 
-| Karakteristik | Mode A: Monolitik Streamlit | Mode B: Decoupled Industrial Web (VibraCheck) |
+---
+
+## ✦ Fitur Utama
+
+### 🖥️ Dashboard Industri
+
+| Fitur | Deskripsi |
+|---|---|
+| **Diagnosa Real-time** | Klasifikasi 4 kondisi bantalan dengan probabilitas per kelas dan status bahaya semantik (AMAN / WASPADA / KRITIS) |
+| **Spektrum FFT** | Grafik frekuensi akselerasi interaktif dengan ambang batas kritis 1.20 g pk dan penanda BPFO / BPFI / BSF |
+| **Gelombang Waktu** | Visualisasi sinyal domain waktu dengan metrik Peak-to-Peak dan RMS |
+| **Rekomendasi ISO 20816** | Suku cadang, kode part, ketersediaan gudang, dan zonasi getaran ISO otomatis |
+| **Quick Presets** | 4 tombol skenario cepat (*Normal*, *Outer Race*, *Inner Race*, *Ball Fault*) langsung inferensi |
+| **Unit Mesin Switcher** | Pemilih 4 unit turbine pump dengan status independen |
+
+### 🧪 Fitur Lanjutan
+
+| Fitur | Deskripsi |
+|---|---|
+| **Batch Analysis** | Upload CSV multi-mesin → tabel armada, filter kategori, download CSV hasil |
+| **PDF Report Export** | Unduh laporan diagnosis lengkap dengan header logo, metrik, grafik, dan rekomendasi ISO |
+| **Sensor Modal** | Panel input manual 12 parameter sensor dengan demo validasi 422 |
+| **Panduan ISO Modal** | Referensi zonasi getaran ISO 20816 interaktif |
+| **Intro Splash** | Animasi maskot winking dengan efek suara prosedural (Web Audio API) |
+| **Profil Operator** | Switcher identitas analis getaran |
+
+---
+
+## ✦ Tech Stack
+
+### Backend
+
+| Teknologi | Versi | Fungsi |
 |---|---|---|
-| **Frontend** | Streamlit Python (`app/ui/streamlit_app.py`) | Next.js 16 (App Router), TypeScript, Tailwind CSS (`web/`) |
-| **Backend / Inferensi** | Terintegrasi langsung dalam proses Python yang sama | FastAPI Service mandiri via REST API (`app/api/main.py`) |
-| **Visualisasi Sinyal** | Matplotlib / Altair statis | Recharts responsif: Spektrum FFT & Gelombang Domain Waktu |
-| **Validasi Input** | Form Streamlit standar | Skema Pydantic v2 ketat (HTTP 422 jika input tidak realistis) |
-| **Target Pengguna** | Demonstrasi cepat, prototipe lokal | Analis keandalan pabrik (*Reliability Engineer*), integrasi SCADA/IoT |
-| **Skalabilitas** | Skala vertikal tunggal | Skala independen antara API microservice dan antarmuka web |
+| Python | 3.14 | Runtime |
+| FastAPI | 0.162 | REST API framework |
+| scikit-learn | 1.6.1 | Pipeline ML (Random Forest) |
+| XGBoost | 3.4.1 | Benchmarking model |
+| Pandas | 3.1.0 | Preprocessing data |
+| Pydantic | 2.14 | Validasi input ketat |
+| Streamlit | 1.66 | UI alternatif monolitik |
+
+### Frontend
+
+| Teknologi | Versi | Fungsi |
+|---|---|---|
+| Next.js | 16.4 | App Router SSR/SSG |
+| React | 19.3 | UI framework |
+| TypeScript | 5.x | Static typing |
+| Tailwind CSS | 4.3 | Styling utility-first |
+| Motion | 14.14 | Animasi & transisi |
+| Recharts | 3.11 | Grafik interaktif |
+| jsPDF | 4.2 | Generasi laporan PDF |
+| Lucide React | 1.75 | Ikon industri |
 
 ---
 
-## 3. Panduan Menjalankan Mode B (FastAPI + Next.js Frontend)
+## ✦ Quick Start
 
-Mode B adalah arsitektur decoupled berstandar industri dengan backend FastAPI di port 8000 dan antarmuka web Next.js (VibraCheck) di port 3000.
-
-### Prasyarat
-- Python 3.10+ (disarankan Python 3.12 atau 3.14)
-- Node.js 18.18+ atau Node.js 20+ dan npm
-- Git
-
-### Langkah 1: Persiapan Lingkungan Python & Backend API
-Buka Terminal 1 di root direktori repositori:
+### 🚀 1-Klik Fullstack
 
 ```powershell
-# 1. Buat dan aktifkan virtual environment
-python -m venv .venv
-.\.venv\Scripts\activate      # Untuk Windows PowerShell
-# source .venv/bin/activate   # Untuk Linux / macOS
+# Clone & masuk ke direktori
+git clone https://github.com/Boerhan06/mkb-ml-p3.git
+cd mkb-ml-p3
 
-# 2. Instal dependensi backend
+# Setup Python environment
+python -m venv .venv
+.\.venv\Scripts\activate
 pip install -r requirements-dev.txt
 
-# 3. Jalankan server backend FastAPI
-uvicorn app.api.main:app --reload --port 8000
+# Setup Node.js frontend
+cd web && npm install && cd ..
+
+# Jalankan semuanya
+.\run.bat
 ```
 
-Backend FastAPI akan aktif di:
-- **API Base URL:** `http://127.0.0.1:8000`
-- **Swagger UI Interaktif:** `http://127.0.0.1:8000/docs`
-- **Health Check Endpoint:** `http://127.0.0.1:8000/health`
+> [!TIP]
+> `run.bat` otomatis menjalankan backend FastAPI (port 8000) dan frontend Next.js (port 3000) secara paralel, termasuk auto-free port jika port sedang terpakai.
 
-### Langkah 2: Persiapan & Menjalankan Frontend Next.js (VibraCheck)
-Buka Terminal 2 baru:
+**Akses:**
+- 🖥️ Dashboard VibraCheck → `http://localhost:3000`
+- 📡 Swagger API Docs → `http://localhost:8000/docs`
 
-```powershell
-# 1. Masuk ke direktori web
-cd web
-
-# 2. Pastikan file konfigurasi environment tersedia
-# File web/.env.local sudah disediakan dengan isi:
-# NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
-
-# 3. Instal dependensi npm (jika belum)
-npm install
-
-# 4. Jalankan development server
-npm run dev
-```
-
-Buka peramban (*browser*) Anda di:
-- **Dashboard VibraCheck:** `http://localhost:3000`
-
-### Fitur Utama Dashboard VibraCheck (Mode B):
-1. **Header Kendali & Quick Presets:** 4 tombol skenario cepat (*Normal*, *Outer Race*, *Inner Race*, *Ball Fault*) untuk mengisi data sensor dan menjalankan inferensi langsung.
-2. **Kartu Diagnosa Utama:** Status bahaya semantik (AMAN, WASPADA, KRITIS), persentase keyakinan model, penjelasan mekanis kerusakan, dan visualisasi distribusi probabilitas 4 kelas.
-3. **Spektrum Akselerasi FFT (Recharts):** Grafik spektral domain frekuensi lengkap dengan garis ambang batas kritis 1.20 g pk dan penanda puncak frekuensi cacat (BPFO, BPFI, BSF).
-4. **Bentuk Gelombang Domain Waktu (Recharts):** Grafik amplitudo akselerasi getaran terhadap waktu dengan kalkulasi metrik Peak-to-Peak (pk-pk) dan RMS.
-5. **Rekomendasi Suku Cadang & Standar ISO 20816:** Nomor part bearing, status stok gudang, zonasi getaran ISO, tombol pembuatan tiket kerja (*work order*), serta ekspor ringkasan CSV.
-6. **Panel Input Sensor Manual & Uji Demo 422:** Panel akordeon interaktif untuk mengubah nilai 12 fitur sensor manual, disertai tombol uji coba input ekstrem/negatif untuk mendemonstrasikan penolakan error validasi Pydantic HTTP 422 secara transparan.
-7. **Tab Armada Mesin (Batch CSV):** Pemrosesan batch banyak mesin secara simultan via `POST /predict/batch`, tabel ringkasan status armada, filter kategori, unduh CSV hasil analisis, serta penampil raw JSON Request dan Response.
-
----
-
-## 4. Panduan Menjalankan Mode A (Monolitik Streamlit)
-
-Jika Anda ingin menjalankan antarmuka Python Streamlit monolitik sederhana:
+### Menjalankan Terpisah
 
 ```powershell
-# Jalankan langsung dari root repositori:
-streamlit run app/ui/streamlit_app.py
-```
+# Backend saja
+npm run api
 
-Peramban akan terbuka otomatis di `http://localhost:8501`.
-Untuk menghubungkan Streamlit ke server FastAPI eksternal, tentukan variabel lingkungan:
-```powershell
-$env:API_URL="http://127.0.0.1:8000"
-streamlit run app/ui/streamlit_app.py
+# Frontend saja
+npm run web
+
+# Streamlit (Mode A)
+npm run ui
 ```
 
 ---
 
-## 5. Endpoint REST API (FastAPI)
+## ✦ Arsitektur
 
-Backend FastAPI menyediakan dokumentasi OpenAPI interaktif yang dapat diakses langsung pada `http://127.0.0.1:8000/docs`.
+```mermaid
+flowchart LR
+    subgraph Frontend["🖥️ Next.js 16 · Port 3000"]
+        UI["Dashboard Bento Grid"]
+        Charts["Recharts FFT & Waveform"]
+        PDF["jsPDF Report"]
+        Intro["Intro Splash + Web Audio"]
+    end
 
-### Ringkasan Endpoint
+    subgraph Backend["⚙️ FastAPI · Port 8000"]
+        API["REST Endpoints"]
+        Val["Pydantic v2 Validation"]
+        Pred["predictor.py"]
+    end
+
+    subgraph ML["🧠 ML Pipeline"]
+        Feat["features.py · 12→23 fitur"]
+        Model["Random Forest · 200 trees"]
+        Meta["metadata.json"]
+    end
+
+    subgraph Data["📊 Data"]
+        Raw["raw.csv · 15.220 observasi"]
+    end
+
+    UI -->|"HTTP JSON"| API
+    API --> Val --> Pred
+    Pred --> Feat --> Model
+    Model -.->|"load"| Meta
+    Data -.->|"train"| Model
+    API -->|"Response"| Charts
+    API -->|"Response"| PDF
+```
+
+Aplikasi mendukung **2 mode deployment**:
+
+| | Mode A: Streamlit | Mode B: Next.js (VibraCheck) |
+|---|---|---|
+| **Arsitektur** | Monolitik Python | Decoupled REST API |
+| **Frontend** | Streamlit built-in | Next.js 16 + TypeScript |
+| **Visualisasi** | Matplotlib statis | Recharts interaktif |
+| **Target** | Prototipe & demo | Produksi industri |
+| **Skalabilitas** | Vertikal tunggal | Horizontal independen |
+
+---
+
+## ✦ Performa Model
+
+**Random Forest Classifier** · 200 trees · balanced class weights · max depth 20
+
+### Metrik Evaluasi (Test Set 20% — 3.044 sampel)
+
+| Metrik | Skor |
+|---|---|
+| **Macro F1-Score** | **0.8014** |
+| **Akurasi** | **84.0%** |
+| **Baseline (Logistic Regression)** | 0.6909 |
+| **Peningkatan F1** | +0.1105 |
+
+### F1-Score per Kelas
+
+| Kelas | Precision | Recall | F1-Score | Support |
+|---|---|---|---|---|
+| `normal` | 80.3% | 96.1% | **0.8751** | 1.666 |
+| `outer_race` | 91.5% | 74.9% | **0.8238** | 618 |
+| `inner_race` | 89.2% | 67.0% | **0.7655** | 443 |
+| `bola` | 92.5% | 61.8% | **0.7410** | 317 |
+
+### Confusion Matrix
+
+|  | Pred: bola | Pred: inner_race | Pred: normal | Pred: outer_race |
+|---|---|---|---|---|
+| **Aktual: bola** | **196** | 5 | 110 | 6 |
+| **Aktual: inner_race** | 7 | **297** | 136 | 3 |
+| **Aktual: normal** | 7 | 24 | **1.601** | 34 |
+| **Aktual: outer_race** | 2 | 7 | 146 | **463** |
+
+### Fitur Input (12 parameter sensor)
+
+<details>
+<summary>Lihat detail fitur</summary>
+
+**Domain Waktu & Operasional:**
+- `posisi_sensor` — drive_end / non_drive_end
+- `kecepatan_rpm` — Kecepatan putaran rotor
+- `beban_kN` — Beban aksial mesin
+- `suhu_housing_C` — Suhu selubung bantalan
+- `rms_g` — Root Mean Square akselerasi
+- `puncak_g` — Amplitudo puncak getaran
+- `kurtosis` — Distribusi ekor impuls
+- `crest_factor` — Rasio puncak/RMS
+
+**Domain Frekuensi (FFT):**
+- `energi_bpfo` — Energi Ball Pass Frequency Outer
+- `energi_bpfi` — Energi Ball Pass Frequency Inner
+- `energi_bsf` — Energi Ball Spin Frequency
+- `frekuensi_dominan_hz` — Frekuensi puncak spektral
+
+**+11 Fitur Rekayasa** (`src/features.py`): rasio harmonik rotasi, total energi cacat, rasio getaran/beban, indeks keparahan ISO, daya getaran, diferensial BPFI/BPFO.
+
+</details>
+
+---
+
+## ✦ REST API
+
+> Dokumentasi OpenAPI interaktif: `http://127.0.0.1:8000/docs`
+
+### Endpoints
 
 | Metode | Path | Deskripsi |
 |---|---|---|
-| `GET` | `/health` | Memeriksa ketersediaan layanan, versi model, skor Macro F1, dan daftar 12 fitur input. |
-| `POST` | `/predict` | Mendiagnosis satu observasi getaran mesin dengan validasi Pydantic ketat. |
-| `POST` | `/predict/batch` | Mendiagnosis daftar observasi getaran (hingga 1.000 mesin dalam satu request). |
-| `GET` | `/docs` | Dokumentasi antarmuka Swagger UI. |
+| `GET` | `/health` | Status layanan, versi model, skor F1, daftar fitur |
+| `POST` | `/predict` | Diagnosis satu observasi getaran (12 parameter) |
+| `POST` | `/predict/batch` | Diagnosis batch (hingga 1.000 mesin/request) |
+| `GET` | `/simulate/{kondisi}` | Sampel parameter untuk kondisi tertentu |
 
-### Contoh Pemanggilan `POST /predict`
+### Contoh Request
 
-**Request:**
 ```bash
 curl -X POST http://127.0.0.1:8000/predict \
   -H "Content-Type: application/json" \
@@ -179,7 +278,9 @@ curl -X POST http://127.0.0.1:8000/predict \
   }'
 ```
 
-**Response (HTTP 200 OK):**
+<details>
+<summary>Contoh Response (200 OK)</summary>
+
 ```json
 {
   "kelas_prediksi": "Inner Race",
@@ -192,7 +293,7 @@ curl -X POST http://127.0.0.1:8000/predict \
     "Ball Fault": 0.045
   },
   "rekomendasi": {
-    "tindakan": "Jadwalkan penggantian bantalan segera. Pantau tren kenaikan suhu housing.",
+    "tindakan": "Jadwalkan penggantian bantalan segera.",
     "komponen": "Bearing Inner Ring / Cincin Dalam Bantalan Baru",
     "kode_suku_cadang": "BRG-6205-IR-C3",
     "ketersediaan": "Tersedia di Gudang Sentral",
@@ -203,8 +304,10 @@ curl -X POST http://127.0.0.1:8000/predict \
 }
 ```
 
-### Demonstrasi Validasi Error (HTTP 422 Unprocessable Entity)
-Jika input memuat nilai yang tidak realistis (misalnya `kecepatan_rpm: -500` atau `crest_factor: -2`), backend akan menolak request secara aman sebelum memproses ke model:
+</details>
+
+<details>
+<summary>Contoh Error Validasi (422)</summary>
 
 ```json
 {
@@ -219,111 +322,176 @@ Jika input memuat nilai yang tidak realistis (misalnya `kecepatan_rpm: -500` ata
 }
 ```
 
----
-
-## 6. Verifikasi & Pengujian Otomatis
-
-Proyek ini dilengkapi dengan pengujian unit dan integrasi otomatis yang ketat:
-
-### 1. Pengujian Backend API (`pytest`)
-Menjalankan 26 uji fungsional: verifikasi CORS middleware, endpoint health check, batas nilai ekstrem, case formatting, penolakan input negatif / string kosong, hingga kalkulasi batch.
-
-```powershell
-.\.venv\Scripts\pytest.exe -v
-```
-*Status: 26 passed (100% lulus).*
-
-### 2. Pengujian Kompilasi Frontend Next.js (`npm run build`)
-Memverifikasi static type checking TypeScript, validasi ESLint, dan optimasi aset Turbopack.
-
-```powershell
-cd web
-npm run build
-```
-*Status: Compiled successfully, 0 errors, static pages prerendered.*
+</details>
 
 ---
 
-## 7. Struktur Direktori Repositori
+## ✦ Struktur Proyek
 
 ```
 mkb-ml-p3/
-├── artifacts/
-│   ├── metadata.json           # Metadata model, skema fitur, metrik F1 & akurasi
-│   └── model.joblib            # Pipeline scikit-learn Random Forest terlatih
-├── src/
-│   ├── __init__.py
-│   └── features.py             # Kalkulasi fitur fisika getaran (rotasi, rasio harmonik, indeks ISO)
-├── app/
-│   ├── predictor.py            # Modul pemuatan artifact & inferensi terpusat
+├── app/                            # Backend Application
 │   ├── api/
-│   │   ├── __init__.py
-│   │   └── main.py             # FastAPI REST Service (CORS, validasi Pydantic, health, predict)
+│   │   └── main.py                 # FastAPI entrypoint (CORS, health, predict, batch)
+│   ├── predictor.py                # ML inference engine & ISO 20816 evaluator
 │   └── ui/
-│       ├── streamlit_app.py    # Aplikasi Streamlit (Mode A)
-│       └── assets/
-│           └── logo.jpg        # Identitas visual logo aplikasi
+│       ├── streamlit_app.py        # Streamlit UI (Mode A)
+│       └── assets/logo.jpg         # Logo aset Streamlit
+│
+├── src/                            # Core ML Feature Engineering
+│   └── features.py                 # Fisika getaran: 12 raw → 23 fitur
+│
+├── artifacts/                      # Serialized ML Assets
+│   ├── model.joblib                # Trained Random Forest pipeline
+│   └── metadata.json              # Model metrics, schema, confusion matrix
+│
 ├── data/
-│   └── contoh_batch.csv        # Berkas contoh data getaran untuk uji coba batch
-├── tests/
-│   ├── __init__.py
-│   └── test_api.py             # 26 pengujian otomatis pytest
-├── web/                        # Aplikasi Frontend Next.js 16 (Mode B - VibraCheck)
-│   ├── .env.example            # Template variabel lingkungan
-│   ├── .env.local              # Konfigurasi URL API lokal (NEXT_PUBLIC_API_URL)
-│   ├── DESIGN.md               # Pedoman sistem desain industri anti-slop
-│   ├── package.json            # Dependensi (Next.js, React 19, Lucide, Recharts)
-│   ├── tsconfig.json           # Konfigurasi TypeScript
+│   ├── raw.csv                     # 15.220 observasi sensor getaran
+│   └── contoh_batch.csv            # Sample file batch testing
+│
+├── web/                            # Next.js 16 Frontend (VibraCheck)
 │   ├── public/
-│   │   ├── logo.jpg            # Aset logo merek VibraCheck
-│   │   └── contoh_batch.csv    # Berkas sampel untuk demo batch frontend
+│   │   ├── logo.jpg                # Brand mascot avatar
+│   │   └── contoh_batch.csv        # Sample batch CSV download
 │   └── src/
 │       ├── app/
-│       │   ├── layout.tsx      # Root layout dengan font Inter & metadata
-│       │   ├── page.tsx        # Dashboard koordinasi utama (Bento grid)
-│       │   └── globals.css     # Palet warna Tailwind CSS v4
+│       │   ├── layout.tsx          # Root layout & metadata
+│       │   ├── page.tsx            # Main bento-grid dashboard
+│       │   └── globals.css         # Tailwind v4 industrial palette
 │       ├── components/
-│       │   ├── Sidebar.tsx             # Navigasi kiri & status kesehatan model
-│       │   ├── TopBar.tsx              # Pemilih unit mesin & quick preset pills
-│       │   ├── DiagnosisCard.tsx       # Kartu status diagnosa utama & probabilitas
-│       │   ├── SpectrumChart.tsx       # Grafik spektrum FFT akselerasi (Recharts)
-│       │   ├── WaveformChart.tsx       # Grafik gelombang domain waktu (Recharts)
-│       │   ├── RecommendationCard.tsx  # Informasi suku cadang & standar ISO 20816
-│       │   ├── SensorInputPanel.tsx    # Panel input manual 12 fitur & demo 422
-│       │   └── BatchTab.tsx            # Analisis armada mesin multi-mesin (CSV)
+│       │   ├── IntroSplash.tsx     # SVG mascot wink animation + Web Audio SFX
+│       │   ├── Sidebar.tsx         # Navigasi, model status, profil operator
+│       │   ├── TopBar.tsx          # Machine unit switcher & quick presets
+│       │   ├── DiagnosisCard.tsx   # Status diagnosa, probabilitas, live timer
+│       │   ├── SpectrumChart.tsx   # FFT spectrum chart (Recharts)
+│       │   ├── WaveformChart.tsx   # Time-domain waveform (Recharts)
+│       │   ├── RecommendationCard.tsx  # ISO 20816, spare parts, work order
+│       │   ├── SensorInputPanel.tsx    # 12-parameter manual input + 422 demo
+│       │   ├── SensorModal.tsx     # Sensor input floating modal
+│       │   ├── SensorForm.tsx      # Reusable sensor form component
+│       │   ├── IsoGuideModal.tsx   # ISO 20816 reference modal (Portal)
+│       │   ├── BatchTab.tsx        # Multi-machine CSV batch analysis
+│       │   └── BackgroundGraphics.tsx  # Neumorphic ambient visuals
 │       ├── lib/
-│       │   ├── api.ts          # Klien HTTP terisolasi dengan penanganan fallback
-│       │   └── chartData.ts    # Generator data FFT & bentuk gelombang sintesis
+│       │   ├── api.ts              # HTTP client with error handling
+│       │   ├── chartData.ts        # FFT & waveform data generator
+│       │   ├── constants.ts        # Presets, machine units, user profiles
+│       │   ├── motion.ts           # Motion animation variants
+│       │   └── pdfReport.ts        # PDF report generator (jsPDF)
 │       └── types/
-│           └── bearing.ts      # Definisi antarmuka TypeScript untuk skema sensor & respons
-├── Dockerfile                  # Konfigurasi container Docker multi-tahap
-├── requirements.txt            # Dependensi produksi Python (versi ter-pin)
-├── requirements-dev.txt        # Dependensi pengembangan & pengujian
-└── README.md                   # Dokumentasi teknis proyek
+│           └── bearing.ts          # TypeScript interfaces
+│
+├── tests/
+│   └── test_api.py                 # 26 automated tests (pytest)
+│
+├── scripts/
+│   └── push.js                     # Git add + commit + push automation
+│
+├── train_model.py                  # ML training & artifact export
+├── run.bat                         # 1-click fullstack launcher (Windows)
+├── run.ps1                         # PowerShell launcher alternative
+├── Dockerfile                      # Production container (port 7860)
+├── requirements.txt                # Python production dependencies
+├── requirements-dev.txt            # Python dev + test dependencies
+├── package.json                    # Root npm scripts
+└── AGENTS.md                       # Architecture map for AI agents
 ```
 
 ---
 
-## 8. Panduan Deployment Produksi
+## ✦ npm Scripts
 
-### Opsi A: Deployment Frontend Next.js ke Vercel
-1. Hubungkan repositori GitHub Anda ke [Vercel](https://vercel.com).
-2. Atur **Root Directory** ke folder `web`.
-3. Tambahkan Environment Variable di Vercel:
-   - `NEXT_PUBLIC_API_URL` = URL FastAPI Anda yang telah di-deploy (misalnya `https://api-vibracheck.onrender.com`).
-4. Klik **Deploy**.
+| Command | Deskripsi |
+|---|---|
+| `npm start` | Jalankan fullstack (backend + frontend) via `run.bat` |
+| `npm run api` | Jalankan backend FastAPI saja (port 8000) |
+| `npm run web` | Jalankan frontend Next.js saja (port 3000) |
+| `npm run ui` | Jalankan Streamlit UI (Mode A, port 8501) |
+| `npm run test` | Jalankan pytest (26 test cases) |
+| `npm run train` | Latih ulang model ML → `artifacts/` |
+| `npm run push` | Git add + commit + push otomatis |
 
-### Opsi B: Deployment Backend FastAPI ke Render / Hugging Face Spaces
-1. Hubungkan repositori ke platform hosting Docker (Render atau Hugging Face Spaces).
-2. Tentukan target container port ke `7860` (atau port bawaan platform).
-3. Setelah service aktif, pasang URL endpoint tersebut ke variabel `NEXT_PUBLIC_API_URL` pada frontend.
+---
 
-### Opsi C: Menjalankan via Docker Lokal
-```bash
-# Build image Docker
-docker build -t vibracheck-backend .
+## ✦ Testing
 
-# Jalankan container backend di port 7860
-docker run -p 7860:7860 vibracheck-backend
+### Backend API (pytest)
+
+26 test cases: CORS middleware, health check, batas nilai ekstrem, format kelas, penolakan input negatif/string kosong, batch processing.
+
+```powershell
+npm run test
+# atau
+.\.venv\Scripts\pytest.exe -v
 ```
-Akses Swagger UI di `http://localhost:7860/docs`.
+
+### Frontend (Next.js build)
+
+TypeScript type checking, ESLint validation, Turbopack optimization.
+
+```powershell
+cd web && npm run build
+```
+
+---
+
+## ✦ Deployment
+
+### Opsi A — Frontend ke Vercel
+
+1. Hubungkan repo GitHub ke [Vercel](https://vercel.com)
+2. Set **Root Directory** → `web`
+3. Tambahkan env variable: `NEXT_PUBLIC_API_URL` = URL backend
+4. Deploy
+
+### Opsi B — Backend ke Render / HF Spaces
+
+1. Hubungkan repo ke platform Docker hosting
+2. Container port: `7860`
+3. Pasang URL endpoint ke `NEXT_PUBLIC_API_URL` frontend
+
+### Opsi C — Docker Lokal
+
+```bash
+docker build -t vibracheck .
+docker run -p 7860:7860 vibracheck
+```
+
+Swagger UI → `http://localhost:7860/docs`
+
+---
+
+## ✦ Sistem Desain
+
+VibraCheck mengadopsi prinsip **Anti-Slop Industrial Design** — UI operasional yang ringkas, kontras tinggi, dan bebas dekorasi berlebihan.
+
+| Token | Hex | Fungsi |
+|---|---|---|
+| Deep Emerald | `#1B4332` | Background utama & header |
+| Forest Dark | `#143727` | Surface darker |
+| Forest Accent | `#2D5A43` | Card & panel |
+| Sage | `#AEC3B0` | Teks sekunder & border |
+| Cream Sage | `#E3EED4` | Highlight & badge |
+| Dark Charcoal | `#0F2A1D` | Teks kontras tinggi |
+| Wine Red | `#7A1315` | Indikator fault & progress bar |
+
+---
+
+## ✦ Kredit
+
+**MKB — Machine Learning** · Universitas Pendidikan Indonesia
+
+Studi Kasus 04: Diagnosis kerusakan bantalan peluru (*bearing*) multikelas pada mesin rotasi pabrik semen menggunakan analisis getaran akselerometer.
+
+| | |
+|---|---|
+| **P2** | Eksplorasi data & training model (Colab/notebook) |
+| **P3** | Deployment produksi (repositori ini) |
+
+---
+
+<p align="center">
+  <img src="web/public/logo.jpg" alt="VibraCheck" width="40" height="40" style="border-radius: 10px;" />
+  <br />
+  <sub>Built with ☕ and vibrations</sub>
+</p>

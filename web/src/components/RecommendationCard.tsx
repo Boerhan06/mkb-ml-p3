@@ -4,20 +4,26 @@ import { useState } from "react";
 import { Wrench, Download, CheckCircle, FileText } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { springs } from "@/lib/motion";
-import { PredictionResponse, SensorInput } from "@/types/bearing";
+import { PredictionResponse, SensorInput, MachineUnit, UserProfile } from "@/types/bearing";
+import { generateDiagnosticPDF } from "@/lib/pdfReport";
 
 interface RecommendationCardProps {
   prediction: PredictionResponse;
   sensorInput: SensorInput;
   isLoading?: boolean;
+  machine?: MachineUnit;
+  operator?: UserProfile;
 }
 
 export default function RecommendationCard({
   prediction,
   sensorInput,
   isLoading = false,
+  machine,
+  operator,
 }: RecommendationCardProps) {
   const [ticketId, setTicketId] = useState<string | null>(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const shouldReduceMotion = useReducedMotion();
 
   const isNormal = prediction.kelas_prediksi === "Normal";
@@ -46,44 +52,30 @@ export default function RecommendationCard({
   };
 
   const handleDownloadReport = () => {
-    const reportData = [
-      ["Parameter", "Nilai"],
-      ["Unit Mesin", "Turbine Pump #04 - Drive End Bearing"],
-      ["Kelas Prediksi", prediction.kelas_prediksi],
-      ["Status Bahaya", prediction.status_bahaya],
-      ["Keyakinan Model", `${(prediction.keyakinan * 100).toFixed(1)}%`],
-      ["Kecepatan Poros (RPM)", sensorInput.kecepatan_rpm],
-      ["Beban Mekanis (kN)", sensorInput.beban_kN],
-      ["Suhu Housing (°C)", sensorInput.suhu_housing_C],
-      ["Getaran RMS (g)", sensorInput.rms_g],
-      ["Getaran Peak (g)", sensorInput.puncak_g],
-      ["Kurtosis", sensorInput.kurtosis],
-      ["Crest Factor", sensorInput.crest_factor],
-      ["Frekuensi Dominan (Hz)", sensorInput.frekuensi_dominan_hz],
-      ["Suku Cadang", rekom.komponen],
-      ["Kode Part", rekom.kode_suku_cadang],
-      ["Klasifikasi ISO 20816", rekom.zona_iso_20816],
-      ["Rekomendasi Teknisi", rekom.tindakan],
-    ];
-
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      reportData.map((e) => e.map((val) => `"${val}"`).join(",")).join("\n");
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute(
-      "download",
-      `Laporan_VibraCheck_${prediction.kelas_prediksi.replace(/\s+/g, "_")}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    setIsGeneratingPdf(true);
+    try {
+      generateDiagnosticPDF({
+        prediction,
+        sensorInput,
+        rekom,
+        machine,
+        operator,
+      });
+    } catch (err) {
+      console.error("Gagal membuat berkas PDF:", err);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
+  // Format zona ISO 20816 agar ringkas & tidak kepotong di kolom kanan
+  const rawZona = rekom.zona_iso_20816 || "Zona A";
+  const ringkasZona = rawZona.includes("(")
+    ? `${rawZona.split("(")[0].trim()} · ${prediction.status_bahaya === "KRITIS" ? "Kritis" : prediction.status_bahaya === "WASPADA" ? "Waspada" : "Normal"}`
+    : rawZona;
+
   return (
-    <div className="w-full h-full bg-white/95 backdrop-blur-sm rounded-[22px] p-6 shadow-[0_10px_30px_-5px_rgba(15,42,29,0.06),0_4px_12px_-2px_rgba(15,42,29,0.03)] hover:shadow-[0_16px_36px_-4px_rgba(15,42,29,0.10)] transition-all duration-300 border border-[#AEC3B0]/70 flex flex-col justify-between">
+    <div className="w-full h-full bg-white/95 backdrop-blur-sm rounded-[22px] p-5 lg:p-5.5 shadow-[0_10px_30px_-5px_rgba(15,42,29,0.06),0_4px_12px_-2px_rgba(15,42,29,0.03)] hover:shadow-[0_16px_36px_-4px_rgba(15,42,29,0.10)] transition-all duration-300 border border-[#AEC3B0]/70 flex flex-col justify-between">
       {/* Header Info */}
       <div className="flex items-baseline justify-between pb-3 border-b border-[#AEC3B0]/70">
         <div>
@@ -124,12 +116,12 @@ export default function RecommendationCard({
           </div>
 
           {/* Skeleton Severity Box */}
-          <div className="bg-[#E3EED4]/35 border border-[#AEC3B0]/70 rounded-xl p-3 flex items-center justify-between">
-            <div className="space-y-1">
+          <div className="bg-[#E3EED4]/35 border border-[#AEC3B0]/70 rounded-xl p-3 flex items-center justify-between gap-3">
+            <div className="space-y-1 min-w-0">
               <div className="h-3 w-20 rounded bg-[#6B9071]/20" />
-              <div className="h-4 w-32 rounded bg-[#0F2A1D]/20" />
+              <div className="h-4 w-28 rounded bg-[#0F2A1D]/20" />
             </div>
-            <div className="h-6 w-16 rounded-md bg-[#375534]/20" />
+            <div className="h-6 w-20 rounded-md bg-[#375534]/20 flex-shrink-0" />
           </div>
         </div>
       ) : (
@@ -140,39 +132,42 @@ export default function RecommendationCard({
 
           {/* Inset Table Suku Cadang */}
           <div className="bg-[#E3EED4]/35 border border-[#AEC3B0]/70 rounded-xl p-3 flex flex-col space-y-1.5">
-            <div className="flex items-center justify-between py-1 border-b border-[#AEC3B0]/50 text-[12px]">
-              <span className="text-[#375534]">Suku cadang</span>
-              <span className="text-[#0F2A1D] font-medium text-right">
+            <div className="flex items-center justify-between py-1 border-b border-[#AEC3B0]/50 text-[12px] gap-2">
+              <span className="text-[#375534] flex-shrink-0">Suku cadang</span>
+              <span className="text-[#0F2A1D] font-medium text-right truncate">
                 {rekom.komponen}
               </span>
             </div>
-            <div className="flex items-center justify-between py-1 border-b border-[#AEC3B0]/50 text-[12px]">
-              <span className="text-[#375534]">Kode part</span>
-              <span className="text-[#0F2A1D] font-medium tabular-nums">
+            <div className="flex items-center justify-between py-1 border-b border-[#AEC3B0]/50 text-[12px] gap-2">
+              <span className="text-[#375534] flex-shrink-0">Kode part</span>
+              <span className="text-[#0F2A1D] font-medium tabular-nums text-right truncate">
                 {rekom.kode_suku_cadang}
               </span>
             </div>
-            <div className="flex items-center justify-between py-1 text-[12px]">
-              <span className="text-[#375534]">Stok</span>
-              <span className="text-[#375534] font-semibold">
+            <div className="flex items-center justify-between py-1 text-[12px] gap-2">
+              <span className="text-[#375534] flex-shrink-0">Stok</span>
+              <span className="text-[#375534] font-semibold text-right truncate">
                 {rekom.ketersediaan}
               </span>
             </div>
           </div>
 
-          {/* ISO 20816 Severity Box */}
-          <div className="bg-[#E3EED4]/35 border border-[#AEC3B0]/70 rounded-xl p-3 flex items-center justify-between">
-            <div className="flex flex-col">
-              <span className="text-[11px] font-medium text-[#6B9071]">
+          {/* ISO 20816 Severity Box (Responsif, Anti-Potong) */}
+          <div className="bg-[#E3EED4]/35 border border-[#AEC3B0]/70 rounded-xl p-3 flex items-center justify-between gap-2.5">
+            <div className="flex flex-col min-w-0 pr-1">
+              <span className="text-[10.5px] font-bold text-[#6B9071] uppercase tracking-wider">
                 Zona ISO 20816
               </span>
-              <span className="text-[12.5px] text-[#0F2A1D] font-semibold mt-0.5">
-                {rekom.zona_iso_20816}
+              <span
+                className="text-[12.5px] text-[#0F2A1D] font-semibold mt-0.5 truncate leading-tight"
+                title={rekom.zona_iso_20816}
+              >
+                {ringkasZona}
               </span>
             </div>
-            <div className="text-right">
+            <div className="flex-shrink-0 text-right">
               <span
-                className={`text-[11.5px] px-2 py-0.5 rounded-md font-medium tabular-nums ${
+                className={`inline-block text-[11.5px] font-bold px-2.5 py-1 rounded-md tabular-nums whitespace-nowrap flex-shrink-0 ${
                   prediction.status_bahaya === "KRITIS"
                     ? "bg-[#E05D44]/15 text-[#C84A32] border border-[#E05D44]/30"
                     : prediction.status_bahaya === "WASPADA"
@@ -236,10 +231,11 @@ export default function RecommendationCard({
           transition={springs.tactile}
           type="button"
           onClick={handleDownloadReport}
-          className="w-full py-1 text-center text-[12px] font-medium text-[#375534] hover:text-[#0F2A1D] hover:bg-[#E3EED4]/50 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+          disabled={isGeneratingPdf}
+          className="w-full py-1 text-center text-[12px] font-medium text-[#375534] hover:text-[#0F2A1D] hover:bg-[#E3EED4]/50 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
         >
           <FileText className="w-3.5 h-3.5" />
-          <span>Unduh Laporan</span>
+          <span>{isGeneratingPdf ? "Menyiapkan PDF..." : "Unduh Laporan PDF"}</span>
           <Download className="w-3 h-3 ml-0.5" />
         </motion.button>
       </div>

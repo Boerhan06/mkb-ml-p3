@@ -3,6 +3,11 @@ Write-Host "============================================================" -Foreg
 Write-Host "  Menjalankan VibraCheck Fullstack (FastAPI + Next.js)" -ForegroundColor Cyan
 Write-Host "============================================================`n" -ForegroundColor Cyan
 
+# Bebaskan port 8000 & 3000 jika ada proses lama yang masih mengunci port
+Get-NetTCPConnection -LocalPort 8000, 3000 -ErrorAction SilentlyContinue |
+    Where-Object { $_.OwningProcess -gt 0 } |
+    ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }
+
 if (-not (Test-Path ".\.venv\Scripts\uvicorn.exe")) {
     Write-Host "[ERROR] Virtual environment .venv tidak ditemukan!" -ForegroundColor Red
     Write-Host "Jalankan instalasi dependensi terlebih dahulu." -ForegroundColor Yellow

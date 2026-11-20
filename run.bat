@@ -5,7 +5,10 @@ echo   Menjalankan VibraCheck Fullstack (FastAPI + Next.js)
 echo ============================================================
 echo.
 
-:: 1. Cek Python Virtual Environment
+:: 1. Bebaskan port 8000 & 3000 jika ada proses zombie yang masih nyangkut
+powershell -NoProfile -Command "Get-NetTCPConnection -LocalPort 8000,3000 -ErrorAction SilentlyContinue | Where-Object { $_.OwningProcess -gt 0 } | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }" >nul 2>&1
+
+:: 2. Cek Python Virtual Environment
 if not exist ".\.venv\Scripts\uvicorn.exe" (
     echo [ERROR] Virtual environment .venv tidak ditemukan!
     echo Harap buat virtual environment terlebih dahulu:
@@ -15,7 +18,7 @@ if not exist ".\.venv\Scripts\uvicorn.exe" (
     exit /b 1
 )
 
-:: 2. Cek direktori web
+:: 3. Cek direktori web
 if not exist "web\package.json" (
     echo [ERROR] Folder web tidak ditemukan!
     pause

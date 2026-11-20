@@ -14,8 +14,11 @@ export const metadata: Metadata = {
   description:
     "Sistem Telemetri & Diagnosis Kerusakan Bearing Mesin Industri Berbasis AI Pipeline dan Analisis Vibrasi ISO 20816",
   icons: {
-    icon: "/logo.jpg",
-    apple: "/logo.jpg",
+    icon: [
+      { url: "/logo.png", type: "image/png" },
+      { url: "/favicon.ico" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
 };
 

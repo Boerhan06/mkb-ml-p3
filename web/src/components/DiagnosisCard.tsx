@@ -237,12 +237,12 @@ export default function DiagnosisCard({
                   <span
                     title="BPFO (Ball Pass Frequency Outer): Frekuensi cacat pada lintasan cincin luar"
                     className={`cursor-help border-b border-dotted border-current ${
-                      pOuter > 50 ? "text-[#FDE68A] font-semibold" : "text-[#AEC3B0] font-medium"
+                      pOuter > 50 ? "text-[#FFA4A6] font-semibold" : "text-[#AEC3B0] font-medium"
                     }`}
                   >
                     Outer Race (BPFO)
                   </span>
-                  <span className={`font-semibold tabular-nums ${pOuter > 50 ? "text-[#FDE68A]" : "text-[#E3EED4]"}`}>
+                  <span className={`font-semibold tabular-nums ${pOuter > 50 ? "text-[#FFA4A6]" : "text-[#E3EED4]"}`}>
                     {pOuter}%
                   </span>
                 </div>
@@ -250,7 +250,7 @@ export default function DiagnosisCard({
                   <motion.div
                     style={{ originX: 0 }}
                     className={`w-full h-full rounded-full ${
-                      pOuter > 50 ? "bg-[#F59E0B]" : "bg-[#6B9071]"
+                      pOuter > 50 ? "bg-[#7A1315]" : "bg-[#6B9071]"
                     }`}
                     initial={false}
                     animate={{ scaleX: pOuter / 100 }}
@@ -265,12 +265,12 @@ export default function DiagnosisCard({
                   <span
                     title="BPFI (Ball Pass Frequency Inner): Frekuensi cacat pada alur putar cincin dalam"
                     className={`cursor-help border-b border-dotted border-current ${
-                      pInner > 50 ? "text-[#FDE68A] font-semibold" : "text-[#AEC3B0] font-medium"
+                      pInner > 50 ? "text-[#FFA4A6] font-semibold" : "text-[#AEC3B0] font-medium"
                     }`}
                   >
                     Inner Race (BPFI)
                   </span>
-                  <span className={`font-semibold tabular-nums ${pInner > 50 ? "text-[#FDE68A]" : "text-[#E3EED4]"}`}>
+                  <span className={`font-semibold tabular-nums ${pInner > 50 ? "text-[#FFA4A6]" : "text-[#E3EED4]"}`}>
                     {pInner}%
                   </span>
                 </div>
@@ -278,7 +278,7 @@ export default function DiagnosisCard({
                   <motion.div
                     style={{ originX: 0 }}
                     className={`w-full h-full rounded-full ${
-                      pInner > 50 ? "bg-[#F59E0B]" : "bg-[#6B9071]"
+                      pInner > 50 ? "bg-[#7A1315]" : "bg-[#6B9071]"
                     }`}
                     initial={false}
                     animate={{ scaleX: pInner / 100 }}
@@ -293,12 +293,12 @@ export default function DiagnosisCard({
                   <span
                     title="BSF (Ball Spin Frequency): Frekuensi cacat impuls rotasi bola bearing"
                     className={`cursor-help border-b border-dotted border-current ${
-                      pBall > 50 ? "text-[#FDE68A] font-semibold" : "text-[#AEC3B0] font-medium"
+                      pBall > 50 ? "text-[#FFA4A6] font-semibold" : "text-[#AEC3B0] font-medium"
                     }`}
                   >
                     Ball Fault (BSF)
                   </span>
-                  <span className={`font-semibold tabular-nums ${pBall > 50 ? "text-[#FDE68A]" : "text-[#E3EED4]"}`}>
+                  <span className={`font-semibold tabular-nums ${pBall > 50 ? "text-[#FFA4A6]" : "text-[#E3EED4]"}`}>
                     {pBall}%
                   </span>
                 </div>
@@ -306,7 +306,7 @@ export default function DiagnosisCard({
                   <motion.div
                     style={{ originX: 0 }}
                     className={`w-full h-full rounded-full ${
-                      pBall > 50 ? "bg-[#F59E0B]" : "bg-[#6B9071]"
+                      pBall > 50 ? "bg-[#7A1315]" : "bg-[#6B9071]"
                     }`}
                     initial={false}
                     animate={{ scaleX: pBall / 100 }}

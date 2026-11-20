@@ -1,6 +1,6 @@
 {
   "versi_model": "1.0.0",
-  "dibuat": "2026-11-18",
+  "dibuat": "2026-11-21",
   "kasus": "Kasus 4: Diagnosis Kerusakan Bearing",
   "klien": "Analis Getaran Pabrik Semen",
   "target": "kondisi",
@@ -114,7 +114,7 @@
   },
   "versi_library": {
     "python": "3.14.5",
-    "sklearn": "1.6.1",
+    "sklearn": "1.9.1",
     "xgboost": "3.4.1",
     "pandas": "3.1.0",
     "joblib": "1.6.0"

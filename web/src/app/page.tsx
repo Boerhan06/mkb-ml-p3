@@ -17,9 +17,10 @@ import WaveformChart from "@/components/WaveformChart";
 import SensorInputPanel from "@/components/SensorInputPanel";
 import BatchTab from "@/components/BatchTab";
 import BackgroundGraphics from "@/components/BackgroundGraphics";
+import IntroSplash from "@/components/IntroSplash";
 
 import { fetchHealth, postPredict, API_BASE_URL } from "@/lib/api";
-import { PRESET_INPUTS, FALLBACK_PREDICTIONS } from "@/lib/constants";
+import { PRESET_INPUTS, FALLBACK_PREDICTIONS, MACHINE_UNITS, USER_PROFILES } from "@/lib/constants";
 import {
   springs,
   containerStagger,
@@ -30,11 +31,16 @@ import {
   PredictionResponse,
   ScenarioPreset,
   SensorInput,
+  MachineUnit,
+  UserProfile,
 } from "@/types/bearing";
 import { Cpu, CheckCircle2, ShieldCheck, Database } from "lucide-react";
 
 export default function DashboardPage() {
+  const [showIntro, setShowIntro] = useState<boolean>(true);
   const [activeMenu, setActiveMenu] = useState<string>("diagnosa");
+  const [selectedMachine, setSelectedMachine] = useState<MachineUnit>(MACHINE_UNITS[0]);
+  const [selectedProfile, setSelectedProfile] = useState<UserProfile>(USER_PROFILES[0]);
   const [activePreset, setActivePreset] = useState<ScenarioPreset>("Ball Fault");
   const [sensorInput, setSensorInput] = useState<SensorInput>(
     PRESET_INPUTS["Ball Fault"]
@@ -105,6 +111,13 @@ export default function DashboardPage() {
     runPrediction(targetInput, preset);
   };
 
+  const handleSelectMachine = (machine: MachineUnit) => {
+    setSelectedMachine(machine);
+    setActivePreset(machine.presetKondisi);
+    const targetInput = PRESET_INPUTS[machine.presetKondisi];
+    runPrediction(targetInput, machine.presetKondisi);
+  };
+
   const handleManualPredictionSuccess = (
     newPrediction: PredictionResponse,
     updatedInput: SensorInput
@@ -118,6 +131,13 @@ export default function DashboardPage() {
 
   return (
     <div className="relative flex h-screen overflow-hidden bg-[#F6F5F0] text-[#233026]">
+      {/* Intro Splash Animation (Replicating opening-intro.mp4 with Web Audio sound effects) */}
+      <AnimatePresence>
+        {showIntro && (
+          <IntroSplash onComplete={() => setShowIntro(false)} />
+        )}
+      </AnimatePresence>
+
       {/* 3D Geometric Neumorphic Background Graphics */}
       <BackgroundGraphics />
 
@@ -126,6 +146,11 @@ export default function DashboardPage() {
         activeMenu={activeMenu}
         onSelectMenu={handleSelectMenu}
         health={health}
+        selectedMachine={selectedMachine}
+        onSelectMachine={handleSelectMachine}
+        selectedProfile={selectedProfile}
+        onSelectProfile={setSelectedProfile}
+        onReplayIntro={() => setShowIntro(true)}
       />
 
       {/* Main Content Workspace (Scroll Independen) */}
@@ -139,6 +164,9 @@ export default function DashboardPage() {
             activePreset={activePreset}
             onSelectPreset={handleSelectPreset}
             isLoading={isLoading}
+            selectedMachine={selectedMachine}
+            selectedProfile={selectedProfile}
+            onSelectProfile={setSelectedProfile}
           />
           {/* Scroll-Linked Progress Bar (Apple / Linear Precision) */}
           <div className="w-full h-0.5 bg-transparent overflow-hidden px-6">
@@ -295,6 +323,8 @@ export default function DashboardPage() {
                     prediction={prediction}
                     sensorInput={sensorInput}
                     isLoading={isLoading}
+                    machine={selectedMachine}
+                    operator={selectedProfile}
                   />
                 </div>
               </motion.div>

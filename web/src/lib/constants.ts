@@ -1,4 +1,90 @@
-import { SensorInput, ScenarioPreset, PredictionResponse } from "@/types/bearing";
+import {
+  SensorInput,
+  ScenarioPreset,
+  PredictionResponse,
+  MachineUnit,
+  UserProfile,
+} from "@/types/bearing";
+
+export const USER_PROFILES: UserProfile[] = [
+  {
+    id: "burhan",
+    name: "Burhan AR",
+    role: "Lead Vibration Engineer",
+    shift: "Shift Pagi (07:00 - 15:00 WIB)",
+    avatar: "/logo.png",
+  },
+  {
+    id: "bayu",
+    name: "Bayu Aji",
+    role: "Vibration Analyst",
+    shift: "Shift Pagi (07:00 - 15:00 WIB)",
+    avatar: "/logo.png",
+  },
+];
+
+export const MACHINE_UNITS: MachineUnit[] = [
+  {
+    id: "pump-04",
+    name: "Turbine Pump #04",
+    tag: "DE-04B",
+    initials: "DE",
+    location: "Drive End · DE-04B",
+    type: "Centrifugal Turbine Pump",
+    posisi_sensor: "drive_end",
+    rpm_nominal: 2960,
+    status: "Kritis",
+    presetKondisi: "Ball Fault",
+  },
+  {
+    id: "pump-02",
+    name: "Slurry Pump #02",
+    tag: "FE-02A",
+    initials: "FE",
+    location: "Fan End · FE-02A",
+    type: "Heavy Duty Slurry Pump",
+    posisi_sensor: "fan_end",
+    rpm_nominal: 1480,
+    status: "Waspada",
+    presetKondisi: "Inner Race",
+  },
+  {
+    id: "pump-01",
+    name: "Boiler Feed Pump #01",
+    tag: "DE-01A",
+    initials: "DE",
+    location: "Drive End · DE-01A",
+    type: "Multistage Boiler Feed",
+    posisi_sensor: "drive_end",
+    rpm_nominal: 3000,
+    status: "Waspada",
+    presetKondisi: "Outer Race",
+  },
+  {
+    id: "pump-07",
+    name: "Cooling Water Pump #07",
+    tag: "DE-07C",
+    initials: "CW",
+    location: "Drive End · DE-07C",
+    type: "Raw Water Circulation",
+    posisi_sensor: "drive_end",
+    rpm_nominal: 1750,
+    status: "Aman",
+    presetKondisi: "Normal",
+  },
+  {
+    id: "pump-05",
+    name: "Condensate Pump #05",
+    tag: "FE-05D",
+    initials: "CP",
+    location: "Fan End · FE-05D",
+    type: "Vertical Condensate Ext.",
+    posisi_sensor: "fan_end",
+    rpm_nominal: 2400,
+    status: "Aman",
+    presetKondisi: "Normal",
+  },
+];
 
 export const PRESET_INPUTS: Record<ScenarioPreset, SensorInput> = {
   "Ball Fault": {

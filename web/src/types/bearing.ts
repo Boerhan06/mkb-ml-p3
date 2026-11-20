@@ -56,6 +56,27 @@ export interface HealthStatus {
 
 export type ScenarioPreset = "Normal" | "Outer Race" | "Inner Race" | "Ball Fault";
 
+export interface UserProfile {
+  id: string;
+  name: string;
+  role: string;
+  shift: string;
+  avatar: string;
+}
+
+export interface MachineUnit {
+  id: string;
+  name: string;
+  tag: string;
+  initials: string;
+  location: string;
+  type: string;
+  posisi_sensor: "drive_end" | "fan_end";
+  rpm_nominal: number;
+  status: "Aman" | "Waspada" | "Kritis";
+  presetKondisi: ScenarioPreset;
+}
+
 export interface BatchMachineRecord extends SensorInput {
   id_rekaman: string;
   id_mesin?: string;

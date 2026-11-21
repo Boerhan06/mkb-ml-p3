@@ -1,2 +1,16 @@
+[project]
+name = "vibracheck-api"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "pydantic",
+    "scikit-learn",
+    "xgboost-cpu",
+    "joblib",
+    "numpy",
+    "pandas",
+]
+
 [tool.vercel]
 entrypoint = "app.api.main:app"

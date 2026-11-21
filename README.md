@@ -495,3 +495,4 @@ Studi Kasus 04: Diagnosis kerusakan bantalan peluru (*bearing*) multikelas pada 
   <br />
   <sub>Built with ☕ and vibrations</sub>
 </p>
+

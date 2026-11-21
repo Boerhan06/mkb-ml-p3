@@ -65,11 +65,12 @@ export default function TopBar({
       <div className="flex items-center gap-3 md:gap-5 pl-4 sm:pl-5 py-2 overflow-x-auto no-scrollbar">
         {/* Brand & Circular Logo */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          <div className="relative w-6 h-6 rounded-full overflow-hidden border border-[#AEC3B0]/80 flex-shrink-0 shadow-2xs">
+          <div className="relative w-6 h-6 rounded-full overflow-hidden border border-[#AEC3B0]/80 bg-[#4E5A4C] flex-shrink-0 shadow-2xs">
             <Image
               src="/logo.png"
               alt="VibraCheck Logo"
               fill
+              sizes="24px"
               className="object-cover"
               priority
             />

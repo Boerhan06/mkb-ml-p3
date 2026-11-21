@@ -394,7 +394,7 @@ mkb-ml-p3/
 ├── requirements.txt                # Python production dependencies
 ├── requirements-dev.txt            # Python dev + test dependencies
 ├── package.json                    # Root npm scripts
-└── AGENTS.md                       # Architecture map for AI agents
+└── vercel.json                     # Konfigurasi deployment Vercel Multi-Services
 ```
 
 ---

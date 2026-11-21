@@ -13,3 +13,14 @@ artifact_p2.zip
 !web/src/app/*.png
 !app/ui/assets/*.png
 
+# AI Agent & Assistant ignores
+AGENTS.md
+*/AGENTS.md
+.cursorignore
+.geminiignore
+.agents/
+.agent/
+.gemini/
+.claude/
+.cursor/
+*.cursorrules

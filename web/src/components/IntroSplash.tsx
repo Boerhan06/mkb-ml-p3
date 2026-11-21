@@ -215,7 +215,7 @@ export default function IntroSplash({ onComplete }: IntroSplashProps) {
       exit={{ opacity: 0, scale: 1.04 }}
       transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
       className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#4E5A4C] select-none overflow-hidden cursor-pointer"
-      onClick={handleSkip}
+      onClick={() => handleSkip()}
       title="Klik di mana saja untuk melewati intro"
     >
       {/* Top Controls: Sound Toggle & Skip Button */}
